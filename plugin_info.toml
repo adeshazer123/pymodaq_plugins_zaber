@@ -1,14 +1,11 @@
-## To modify by developper(s) of the plugin
-
 [plugin-info]
-SHORT_PLUGIN_NAME = 'template'  #to be modified, for instance daqmx then rename the module name:
-# (pymodaq_plugins_template become pymodaq_plugins_daqmx for instance)
+SHORT_PLUGIN_NAME = 'zaber'
 
-package-url = 'https://github.com/CEMES-CNRS/pymodaq_plugins_template' #to modify
-description = 'some word about your plugin'
+package-url = 'https://github.com/Attolab/pymodaq_plugins_zaber' #to modify
+description = 'Plugin for Zaber actuators'
 
-author = 'Author Name'
-author-email = 'Author email'
+author = 'Romain Geneaux'
+author-email = 'romain.geneaux@cea.fr'
 license = 'MIT'
 
 [plugin-install]
