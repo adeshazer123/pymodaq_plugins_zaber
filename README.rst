@@ -20,7 +20,7 @@ Actuators
 Installation notes
 ==================
 Basic Installation
-+++++++++
+++++++++++++++++++
 - Install the Zaber Software and download the latest device database.
 - Use the software test your connection to the device and find the correct COM port.
 - Use the software to define which motors are plugged (use the box saying "Enter peripheral ID or name", and choose your device in the list)
