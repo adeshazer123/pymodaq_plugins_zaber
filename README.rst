@@ -15,7 +15,7 @@ Below is the list of instruments included in this plugin
 
 Actuators
 +++++++++
-* All motors using the Zaber Motion Library. Rotations and translations should be both supported
+* All motors using the Zaber Motion Library. Rotations and translations should be both supported (units should adapt to the actuator type), but I only tested translation stages so far.
 
 Installation notes
 ==================
