@@ -8,7 +8,8 @@ Authors
 =======
 
 * Romain Géneaux
-* Sebastien Weber
+* Sebastien J. Weber (sebastien.weber@cnrs.fr)
+
 
 Instruments
 ===========
