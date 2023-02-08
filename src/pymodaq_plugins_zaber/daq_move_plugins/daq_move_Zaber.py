@@ -1,5 +1,5 @@
 from pymodaq.control_modules.move_utility_classes import DAQ_Move_base  # base class
-from pymodaq.control_modules.move_utility_classes import comon_parameters, main  # common set of parameters for all actuators
+from pymodaq.control_modules.move_utility_classes import comon_parameters_fun, main  # common set of parameters for all actuators
 from pymodaq.daq_utils.daq_utils import ThreadCommand, getLineInfo  # object used to send info back to the main thread
 from easydict import EasyDict as edict  # type of dict
 from zaber_motion.ascii import Connection
@@ -15,19 +15,15 @@ class DAQ_Move_Zaber(DAQ_Move_base):
     is_multiaxes = True
     _controller_units = 'mm'
     stage_names = []
+    _epsilon = 0.01
 
     params = [{'title': 'COM Port:', 'name': 'com_port', 'type': 'list', 'limits': ports, 'value': port},
               {'title': 'Controller:', 'name': 'controller_str', 'type': 'str', 'value': ''},
-              {'title': 'MultiAxes:', 'name': 'multiaxes', 'type': 'group', 'visible': is_multiaxes, 'children': [
-                     {'title': 'is Multiaxes:', 'name': 'ismultiaxes', 'type': 'bool', 'value': is_multiaxes},
-                     {'title': 'Status:', 'name': 'multi_status', 'type': 'list', 'value': 'Master', 'limits': ['Master', 'Slave']},
-                     {'title': 'Axis:', 'name': 'axis', 'type': 'int', 'readonly': False, 'value': 1, 'default': 1},
-                 ]},
               {'title': 'Stage Properties:', 'name': 'stage_properties', 'type': 'group', 'children': [
                   {'title': 'Stage Name:', 'name': 'stage_name', 'type': 'str', 'value': '', 'readonly': True},
                   {'title': 'Stage Type:', 'name': 'stage_type', 'type': 'str', 'value': '', 'readonly': True},
               ]}
-              ] + comon_parameters
+              ] + comon_parameters_fun(is_multiaxes, stage_names, epsilon=_epsilon)
 
     # Override definition of units parameter to make it user-changeable
     index = next(i for i, item in enumerate(params) if item["name"] == "units")
