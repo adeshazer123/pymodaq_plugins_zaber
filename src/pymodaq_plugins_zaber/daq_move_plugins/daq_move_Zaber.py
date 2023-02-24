@@ -25,6 +25,15 @@ class DAQ_Move_Zaber(DAQ_Move_base):
               ]}
               ] + comon_parameters_fun(is_multiaxes, stage_names, epsilon=_epsilon)
 
+    # Since we have no way of knowing how many axes are attached to the controller,
+    # we modify axis to be an integer of any value instead of a list of strings.
+    index = next(i for i, item in enumerate(params) if item["name"] == "multiaxes")
+    index2 = next(i for i, item in enumerate(params[index]['children']) if item["name"] == "axis")
+    params[index]['children'][index2]['type'] = 'int'   # override type
+    params[index]['children'][index2]['value'] = 1
+    params[index]['children'][index2]['default'] = 1
+    del params[index]['children'][index2]['limits']     # need to remove limits to avoid bug
+
     # Override definition of units parameter to make it user-changeable
     index = next(i for i, item in enumerate(params) if item["name"] == "units")
     params[index]['readonly'] = False
@@ -67,6 +76,13 @@ class DAQ_Move_Zaber(DAQ_Move_base):
                 self.controller = device_list[0]
 
             self.settings.child('controller_str').setValue(str(self.controller))
+            user_axis =  self.settings.child('multiaxes', 'axis').value()
+            if user_axis > self.controller.axis_count:
+                self.settings.child('multiaxes', 'axis').setValue(1)
+                self.emit_status(ThreadCommand('Update_Status', ['Zaber : You requested to use Axis number '+str(user_axis)+
+                                                                 ' but only '+str(self.controller.axis_count)+
+                                                                 ' are present. Defaulting to Axis number 1.', 'log']))
+            self.settings.child('multiaxes', 'axis').setLimits([*range(1,1+self.controller.axis_count)]) # add limits to axes
             self.update_axis()
 
             self.status.info = "Zaber controller initialized"
