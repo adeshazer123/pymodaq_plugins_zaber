@@ -1,9 +1,10 @@
 from pymodaq.control_modules.move_utility_classes import DAQ_Move_base  # base class
 from pymodaq.control_modules.move_utility_classes import comon_parameters_fun, main  # common set of parameters for all actuators
-from pymodaq.daq_utils.daq_utils import ThreadCommand, getLineInfo  # object used to send info back to the main thread
+from pymodaq.utils.daq_utils import ThreadCommand, getLineInfo  # object used to send info back to the main thread
 from easydict import EasyDict as edict  # type of dict
 from zaber_motion.ascii import Connection
 from zaber_motion import Units, Tools
+from zaber_motion.exceptions.connection_failed_exception import ConnectionFailedException
 
 
 class DAQ_Move_Zaber(DAQ_Move_base):
@@ -72,7 +73,11 @@ class DAQ_Move_Zaber(DAQ_Move_base):
                 else:
                     self.controller = controller
             else:  # Master stage
-                device_list = Connection.open_serial_port(self.settings.child('com_port').value()).detect_devices()
+                try:
+                    device_list = Connection.open_serial_port(self.settings.child('com_port').value()).detect_devices()
+                except ConnectionFailedException:
+                    raise ConnectionError('Could not connect to Zaber controller on the specified serial port.')
+
                 self.controller = device_list[0]
 
             self.settings.child('controller_str').setValue(str(self.controller))

@@ -1,10 +1,11 @@
 from pymodaq.control_modules.move_utility_classes import DAQ_Move_base  # base class
-from pymodaq.control_modules.move_utility_classes import comon_parameters, main  # common set of parameters for all actuators
-from pymodaq.daq_utils.daq_utils import ThreadCommand, getLineInfo  # object used to send info back to the main thread
+from pymodaq.control_modules.move_utility_classes import comon_parameters_fun, main  # common set of parameters for all actuators
+from pymodaq.utils.daq_utils import ThreadCommand, getLineInfo  # object used to send info back to the main thread
 from easydict import EasyDict as edict  # type of dict
 
 from zaber_motion.binary import Device, Connection
 from zaber_motion import Units, Tools
+from zaber_motion.exceptions.connection_failed_exception import ConnectionFailedException
 
 
 LINEAR_UNITS = [unit for unit in Units.__members__ if 'LENGTH' in unit]
@@ -23,16 +24,7 @@ class DAQ_Move_ZaberBinary(DAQ_Move_base):
               {'title': 'Device Index:', 'name': 'device_index', 'type': 'int', 'value': 1},
               {'title': 'Infos:', 'name': 'infos', 'type': 'str', 'value': ''},
               {'title': 'Units:', 'name': 'unit', 'type': 'list', 'limits': LINEAR_UNITS},
-
-              ############
-              {'title': 'MultiAxes:', 'name': 'multiaxes', 'type': 'group', 'visible': is_multiaxes, 'children': [
-                  {'title': 'is Multiaxes:', 'name': 'ismultiaxes', 'type': 'bool', 'value': is_multiaxes,
-                   'default': False},
-                  {'title': 'Status:', 'name': 'multi_status', 'type': 'list', 'value': 'Master',
-                   'limits': ['Master', 'Slave']},
-                  {'title': 'Axis:', 'name': 'axis', 'type': 'list', 'limits': stage_names},
-
-              ]}] + comon_parameters
+              ] + comon_parameters_fun(is_multiaxes, stage_names)
 
     def __init__(self, parent=None, params_state=None):
         super().__init__(parent, params_state)
@@ -80,7 +72,11 @@ class DAQ_Move_ZaberBinary(DAQ_Move_base):
                 else:
                     self.controller = controller
             else:  # Master stage
-                connection = Connection.open_serial_port(self.settings['port'], 9600)
+                try:
+                    connection = Connection.open_serial_port(self.settings['port'], 9600)
+                except ConnectionFailedException:
+                    raise ConnectionError('Could not connect to Zaber controller on the specified serial port.')
+
                 self.controller = Device(connection, self.settings['device_index'])
 
             id = self.controller.identify()
