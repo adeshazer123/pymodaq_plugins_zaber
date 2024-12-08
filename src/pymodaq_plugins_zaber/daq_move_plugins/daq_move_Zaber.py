@@ -93,7 +93,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
             self.status.info = "Zaber controller initialized"
             self.status.controller = self.controller
             self.status.initialized = True
-            return self.status
+            return self.status.initialized, self.status.info
 
         except Exception as e:
             self.emit_status(ThreadCommand('Update_Status',[getLineInfo()+ str(e),'log']))
