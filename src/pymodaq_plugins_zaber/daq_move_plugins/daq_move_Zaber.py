@@ -15,7 +15,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
 
     is_multiaxes = True
     _controller_units = 'mm'
-    stage_names = []
+    stage_names = ['Zaber Actuator']
     _epsilon = 0.01
 
     params = [{'title': 'COM Port:', 'name': 'com_port', 'type': 'list', 'limits': ports, 'value': port},
