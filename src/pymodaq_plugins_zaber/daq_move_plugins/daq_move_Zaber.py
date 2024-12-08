@@ -1,3 +1,6 @@
+# DK - also update __init__.py files in the all folders to be the same as the uptodate template.
+
+# DK - replace these pymodaq.xxx modules with uptodate template
 from pymodaq.control_modules.move_utility_classes import DAQ_Move_base  # base class
 from pymodaq.control_modules.move_utility_classes import comon_parameters_fun, main  # common set of parameters for all actuators
 from pymodaq.utils.daq_utils import ThreadCommand, getLineInfo  # object used to send info back to the main thread
@@ -40,6 +43,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
     params[index]['readonly'] = False
     params[index]['type'] = 'list'
 
+    # DK - delete __init__ method because we have these before we declare class
     def __init__(self, parent=None, params_state=None):
 
         super().__init__(parent, params_state)
@@ -61,6 +65,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
             *initialized: (bool): False if initialization failed otherwise True
         """
 
+        # DK - Bring if is_master... from the uptodate template
         try:
             self.status.update(edict(info="", controller=None, initialized=False))
 
@@ -123,6 +128,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
             self.settings.child('units').setValue('deg')
             self.unit = Units.ANGLE_DEGREES
 
+    # Update according to get_actuator_value in the template
     def check_position(self):
         """Get the current position from the hardware with scaling conversion.
         Returns
@@ -152,6 +158,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
             self.update_axis()
             self.check_position()
 
+        # DK - I prefer to delete this because daq_move now has the unit feature
         elif param.name() == 'units':
             axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
 
@@ -183,6 +190,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         else:
             pass
 
+    # DK - rename this into move_abs. Similary, rename the rest of methods based on the template.
     def move_Abs(self, position):
         """ Move the actuator to the absolute target defined by position
         Parameters
@@ -203,7 +211,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         self.poll_moving()  # start a loop to poll the current actuator value and compare it with target position
         self.check_position()
 
-    def move_Rel(self, position):
+    def move_Rel(self, position): # DK - rename.
         """ Move the actuator to the relative target actuator value defined by position
 
         Parameters
@@ -227,7 +235,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         self.poll_moving()
         self.check_position()
 
-    def move_Home(self):
+    def move_Home(self): # DK - rename
         """
           Send the update status thread command.
             See Also
@@ -251,6 +259,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
         axis.stop()
         self.emit_status(ThreadCommand('Update_Status', ['Stopping Zaber actuator '+ self.parent.title + ' (axis '+str(self.settings.child('multiaxes', 'axis').value())+').']))
+        # DK - we may not need self.move_done() becauese now the base daq_move may do this.
         self.move_done()  # to let the interface know the actuator stopped
 
 
