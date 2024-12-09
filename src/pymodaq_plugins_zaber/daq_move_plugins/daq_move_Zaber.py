@@ -126,8 +126,8 @@ class DAQ_Move_Zaber(DAQ_Move_base):
             self.settings.child('units').setValue('deg')
             self.unit = Units.ANGLE_DEGREES
 
-    # Update according to get_actuator_value in the template
-    def check_position(self):
+
+    def get_actuator_value(self):
         """Get the current position from the hardware with scaling conversion.
         Returns
         -------
@@ -188,7 +188,6 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         else:
             pass
 
-    # DK - rename this into move_abs. Similary, rename the rest of methods based on the template.
     def move_abs(self, position):
         """ Move the actuator to the absolute target defined by position
         Parameters
@@ -209,7 +208,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         self.poll_moving()  # start a loop to poll the current actuator value and compare it with target position
         self.check_position()
 
-    def move_rel(self, position): # DK - rename.
+    def move_rel(self, position): 
         """ Move the actuator to the relative target actuator value defined by position
 
         Parameters
@@ -233,7 +232,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         self.poll_moving()
         self.check_position()
 
-    def move_home(self): # DK - rename
+    def move_home(self):
         """
           Send the update status thread command.
             See Also
