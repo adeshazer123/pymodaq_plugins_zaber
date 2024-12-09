@@ -189,7 +189,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
             pass
 
     # DK - rename this into move_abs. Similary, rename the rest of methods based on the template.
-    def move_Abs(self, position):
+    def move_abs(self, position):
         """ Move the actuator to the absolute target defined by position
         Parameters
         ----------
@@ -209,7 +209,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         self.poll_moving()  # start a loop to poll the current actuator value and compare it with target position
         self.check_position()
 
-    def move_Rel(self, position): # DK - rename.
+    def move_rel(self, position): # DK - rename.
         """ Move the actuator to the relative target actuator value defined by position
 
         Parameters
@@ -233,7 +233,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         self.poll_moving()
         self.check_position()
 
-    def move_Home(self): # DK - rename
+    def move_home(self): # DK - rename
         """
           Send the update status thread command.
             See Also
@@ -257,9 +257,6 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
         axis.stop()
         self.emit_status(ThreadCommand('Update_Status', ['Stopping Zaber actuator '+ self.parent.title + ' (axis '+str(self.settings.child('multiaxes', 'axis').value())+').']))
-        # DK - we may not need self.move_done() becauese now the base daq_move may do this.
-        self.move_done()  # to let the interface know the actuator stopped
-
 
 if __name__ == '__main__':
     main(__file__)
