@@ -1,14 +1,19 @@
 # DK - also update __init__.py files in the all folders to be the same as the uptodate template.
 
 # DK - replace these pymodaq.xxx modules with uptodate template
-from pymodaq.control_modules.move_utility_classes import DAQ_Move_base  # base class
-from pymodaq.control_modules.move_utility_classes import comon_parameters_fun, main  # common set of parameters for all actuators
-from pymodaq.utils.daq_utils import ThreadCommand, getLineInfo  # object used to send info back to the main thread
+# from pymodaq.control_modules.move_utility_classes import DAQ_Move_base  # base class
+# from pymodaq.control_modules.move_utility_classes import comon_parameters_fun, main  # common set of parameters for all actuators
+# from pymodaq.utils.daq_utils import ThreadCommand, getLineInfo  # object used to send info back to the main thread
+from typing import Union, List, Dict
+
+from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, comon_parameters_fun, main, DataActuatorType,\
+    DataActuator  # common set of parameters for all actuators
+from pymodaq.utils.daq_utils import ThreadCommand # object used to send info back to the main thread
+from pymodaq.utils.parameter import Parameter
 from easydict import EasyDict as edict  # type of dict
 from zaber_motion.ascii import Connection
 from zaber_motion import Units, Tools
 from zaber_motion.exceptions.connection_failed_exception import ConnectionFailedException
-
 
 class DAQ_Move_Zaber(DAQ_Move_base):
 
@@ -43,8 +48,6 @@ class DAQ_Move_Zaber(DAQ_Move_base):
     params[index]['readonly'] = False
     params[index]['type'] = 'list'
 
-    # DK - delete __init__ method because we have these before we declare class
-
     def ini_stage(self, controller=None):
         """Actuator communication initialization
 
@@ -60,7 +63,6 @@ class DAQ_Move_Zaber(DAQ_Move_base):
             *initialized: (bool): False if initialization failed otherwise True
         """
 
-        # DK - Bring if is_master... from the uptodate template
         try:
             self.ini_stage_init(slave_controller=controller)
             if self.is_master:
