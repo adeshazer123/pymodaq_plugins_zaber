@@ -1,14 +1,19 @@
 # DK - also update __init__.py files in the all folders to be the same as the uptodate template.
 
 # DK - replace these pymodaq.xxx modules with uptodate template
-from pymodaq.control_modules.move_utility_classes import DAQ_Move_base  # base class
-from pymodaq.control_modules.move_utility_classes import comon_parameters_fun, main  # common set of parameters for all actuators
-from pymodaq.utils.daq_utils import ThreadCommand, getLineInfo  # object used to send info back to the main thread
+# from pymodaq.control_modules.move_utility_classes import DAQ_Move_base  # base class
+# from pymodaq.control_modules.move_utility_classes import comon_parameters_fun, main  # common set of parameters for all actuators
+# from pymodaq.utils.daq_utils import ThreadCommand, getLineInfo  # object used to send info back to the main thread
+from typing import Union, List, Dict
+
+from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, comon_parameters_fun, main, DataActuatorType,\
+    DataActuator  # common set of parameters for all actuators
+from pymodaq.utils.daq_utils import ThreadCommand # object used to send info back to the main thread
+from pymodaq.utils.parameter import Parameter
 from easydict import EasyDict as edict  # type of dict
 from zaber_motion.ascii import Connection
 from zaber_motion import Units, Tools
 from zaber_motion.exceptions.connection_failed_exception import ConnectionFailedException
-
 
 class DAQ_Move_Zaber(DAQ_Move_base):
 
@@ -43,13 +48,6 @@ class DAQ_Move_Zaber(DAQ_Move_base):
     params[index]['readonly'] = False
     params[index]['type'] = 'list'
 
-    # DK - delete __init__ method because we have these before we declare class
-    def __init__(self, parent=None, params_state=None):
-
-        super().__init__(parent, params_state)
-        self.controller = None
-        self.unit = None
-
     def ini_stage(self, controller=None):
         """Actuator communication initialization
 
@@ -65,25 +63,27 @@ class DAQ_Move_Zaber(DAQ_Move_base):
             *initialized: (bool): False if initialization failed otherwise True
         """
 
-        # DK - Bring if is_master... from the uptodate template
         try:
-            self.status.update(edict(info="", controller=None, initialized=False))
+            self.ini_stage_init(slave_controller=controller)
+            if self.is_master:
+                self.status.update(edict(info="", controller=None, initialized=False))
+                try:
+                    device_list = Connection.open_serial_port(self.settings.child('com_port').value()).detect_devices()
+                except ConnectionFailedException:
+                    raise ConnectionError('Could not connect to Zaber controller on the specified serial port.')
+                
+                self.controller = device_list[0]
+
 
             # check whether this stage is controlled by a multiaxe controller (to be defined for each plugin)
             # if multiaxes then init the controller here if Master state otherwise use external controller
-            if self.settings.child('multiaxes', 'ismultiaxes').value() and self.settings.child('multiaxes',
+            elif self.settings.child('multiaxes', 'ismultiaxes').value() and self.settings.child('multiaxes',
                                    'multi_status').value() == "Slave":
                 if controller is None:
                     raise Exception('no controller has been defined externally while this axe is a slave one')
                 else:
                     self.controller = controller
-            else:  # Master stage
-                try:
-                    device_list = Connection.open_serial_port(self.settings.child('com_port').value()).detect_devices()
-                except ConnectionFailedException:
-                    raise ConnectionError('Could not connect to Zaber controller on the specified serial port.')
-
-                self.controller = device_list[0]
+                    
 
             self.settings.child('controller_str').setValue(str(self.controller))
             user_axis =  self.settings.child('multiaxes', 'axis').value()
@@ -128,8 +128,8 @@ class DAQ_Move_Zaber(DAQ_Move_base):
             self.settings.child('units').setValue('deg')
             self.unit = Units.ANGLE_DEGREES
 
-    # Update according to get_actuator_value in the template
-    def check_position(self):
+
+    def get_actuator_value(self):
         """Get the current position from the hardware with scaling conversion.
         Returns
         -------
@@ -190,8 +190,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         else:
             pass
 
-    # DK - rename this into move_abs. Similary, rename the rest of methods based on the template.
-    def move_Abs(self, position):
+    def move_abs(self, position):
         """ Move the actuator to the absolute target defined by position
         Parameters
         ----------
@@ -211,7 +210,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         self.poll_moving()  # start a loop to poll the current actuator value and compare it with target position
         self.check_position()
 
-    def move_Rel(self, position): # DK - rename.
+    def move_rel(self, position): 
         """ Move the actuator to the relative target actuator value defined by position
 
         Parameters
@@ -235,7 +234,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         self.poll_moving()
         self.check_position()
 
-    def move_Home(self): # DK - rename
+    def move_home(self):
         """
           Send the update status thread command.
             See Also
@@ -259,9 +258,6 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
         axis.stop()
         self.emit_status(ThreadCommand('Update_Status', ['Stopping Zaber actuator '+ self.parent.title + ' (axis '+str(self.settings.child('multiaxes', 'axis').value())+').']))
-        # DK - we may not need self.move_done() becauese now the base daq_move may do this.
-        self.move_done()  # to let the interface know the actuator stopped
-
 
 if __name__ == '__main__':
     main(__file__)
