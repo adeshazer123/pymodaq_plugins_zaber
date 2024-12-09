@@ -44,11 +44,6 @@ class DAQ_Move_Zaber(DAQ_Move_base):
     params[index]['type'] = 'list'
 
     # DK - delete __init__ method because we have these before we declare class
-    def __init__(self, parent=None, params_state=None):
-
-        super().__init__(parent, params_state)
-        self.controller = None
-        self.unit = None
 
     def ini_stage(self, controller=None):
         """Actuator communication initialization
@@ -67,23 +62,26 @@ class DAQ_Move_Zaber(DAQ_Move_base):
 
         # DK - Bring if is_master... from the uptodate template
         try:
-            self.status.update(edict(info="", controller=None, initialized=False))
+            self.ini_stage_init(slave_controller=controller)
+            if self.is_master:
+                self.status.update(edict(info="", controller=None, initialized=False))
+                try:
+                    device_list = Connection.open_serial_port(self.settings.child('com_port').value()).detect_devices()
+                except ConnectionFailedException:
+                    raise ConnectionError('Could not connect to Zaber controller on the specified serial port.')
+                
+                self.controller = device_list[0]
+
 
             # check whether this stage is controlled by a multiaxe controller (to be defined for each plugin)
             # if multiaxes then init the controller here if Master state otherwise use external controller
-            if self.settings.child('multiaxes', 'ismultiaxes').value() and self.settings.child('multiaxes',
+            elif self.settings.child('multiaxes', 'ismultiaxes').value() and self.settings.child('multiaxes',
                                    'multi_status').value() == "Slave":
                 if controller is None:
                     raise Exception('no controller has been defined externally while this axe is a slave one')
                 else:
                     self.controller = controller
-            else:  # Master stage
-                try:
-                    device_list = Connection.open_serial_port(self.settings.child('com_port').value()).detect_devices()
-                except ConnectionFailedException:
-                    raise ConnectionError('Could not connect to Zaber controller on the specified serial port.')
-
-                self.controller = device_list[0]
+                    
 
             self.settings.child('controller_str').setValue(str(self.controller))
             user_axis =  self.settings.child('multiaxes', 'axis').value()
