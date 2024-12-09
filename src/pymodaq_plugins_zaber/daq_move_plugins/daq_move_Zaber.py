@@ -10,7 +10,7 @@ from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, comon_pa
     DataActuator  # common set of parameters for all actuators
 from pymodaq.utils.daq_utils import ThreadCommand # object used to send info back to the main thread
 from pymodaq.utils.parameter import Parameter
-from easydict import EasyDict as edict  # type of dict
+from easydict import EasyDict as edict  # type of dict DK - delete. this is outdated.
 from zaber_motion.ascii import Connection
 from zaber_motion import Units, Tools
 from zaber_motion.exceptions.connection_failed_exception import ConnectionFailedException
@@ -23,7 +23,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
 
     is_multiaxes = True
     _controller_units = 'mm'
-    stage_names = ['Zaber Actuator']
+    stage_names = ['Zaber Actuator'] # DK - use the same variable name as the template.
     _epsilon = 0.01
 
     params = [{'title': 'COM Port:', 'name': 'com_port', 'type': 'list', 'limits': ports, 'value': port},
@@ -32,7 +32,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
                   {'title': 'Stage Name:', 'name': 'stage_name', 'type': 'str', 'value': '', 'readonly': True},
                   {'title': 'Stage Type:', 'name': 'stage_type', 'type': 'str', 'value': '', 'readonly': True},
               ]}
-              ] + comon_parameters_fun(is_multiaxes, stage_names, epsilon=_epsilon)
+              ] + comon_parameters_fun(is_multiaxes, stage_names, epsilon=_epsilon) # DK - rename stage_names
 
     # Since we have no way of knowing how many axes are attached to the controller,
     # we modify axis to be an integer of any value instead of a list of strings.
@@ -49,6 +49,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
     params[index]['type'] = 'list'
 
     def ini_stage(self, controller=None):
+        # DK - update the docstring according to the template. Follow the way the template returns info, initialized.
         """Actuator communication initialization
 
         Parameters
@@ -66,6 +67,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         try:
             self.ini_stage_init(slave_controller=controller)
             if self.is_master:
+                # DK - this way with self.status is obsolete.
                 self.status.update(edict(info="", controller=None, initialized=False))
                 try:
                     device_list = Connection.open_serial_port(self.settings.child('com_port').value()).detect_devices()
@@ -157,8 +159,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         if param.name() == 'axis':
             self.update_axis()
             self.check_position()
-
-        # DK - I prefer to delete this because daq_move now has the unit feature
+            
         elif param.name() == 'units':
             axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
 
@@ -185,7 +186,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
             self.settings.child('epsilon').setValue(axis.settings.convert_from_native_units(
                 'pos', epsilon_native_units, self.unit))    # Convert epsilon to new units
 
-            self.check_position()
+            self.check_position() # DK rename all check_position in this code. 
 
         else:
             pass
@@ -194,8 +195,10 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         """ Move the actuator to the absolute target defined by position
         Parameters
         ----------
+        # DK - value should be DataActuator type. 
         position: (flaot) value of the absolute target positioning
         """
+        # DK - position is now value in the template. Also, edit move_rel accordingly.
         position = self.check_bound(position)   # if user checked bounds, the defined bounds are applied here
         self.target_position = position
 
@@ -215,6 +218,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
 
         Parameters
         ----------
+        DK - DataActuator
         position: (flaot) value of the relative target positioning
         """
         position = (self.check_bound(self.current_position + position)
