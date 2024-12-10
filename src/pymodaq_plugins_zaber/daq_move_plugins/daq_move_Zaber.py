@@ -19,9 +19,9 @@ class DAQ_Move_Zaber(DAQ_Move_base):
     ports = Tools.list_serial_ports()
     port = 'COM5' if 'COM5' in ports else ports[0] if len(ports) > 0 else ''
 
-    is_multiaxes = True
+    _is_multiaxes = True
     _controller_units = 'mm'
-    stage_names = ['Zaber Actuator']
+    _axis_names: = ['Zaber Actuator']
     _epsilon = 0.01
 
     params = [{'title': 'COM Port:', 'name': 'com_port', 'type': 'list', 'limits': ports, 'value': port},
@@ -30,7 +30,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
                   {'title': 'Stage Name:', 'name': 'stage_name', 'type': 'str', 'value': '', 'readonly': True},
                   {'title': 'Stage Type:', 'name': 'stage_type', 'type': 'str', 'value': '', 'readonly': True},
               ]}
-              ] + comon_parameters_fun(is_multiaxes, stage_names, epsilon=_epsilon)
+              ] + comon_parameters_fun(is_multiaxes = _is_multiaxes, axis_names = _axis_names, epsilon=_epsilon)
 
     # Since we have no way of knowing how many axes are attached to the controller,
     # we modify axis to be an integer of any value instead of a list of strings.
