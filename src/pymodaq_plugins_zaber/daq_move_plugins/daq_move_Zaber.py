@@ -18,10 +18,11 @@ class DAQ_Move_Zaber(DAQ_Move_base):
     ports = Tools.list_serial_ports()
     port = 'COM5' if 'COM5' in ports else ports[0] if len(ports) > 0 else ''
 
-    is_multiaxes = True
-    _controller_units = 'mm'
-    _axis_names: = ['Zaber Actuator']
-    _epsilon = 0.01
+    is_multiaxes = True 
+    _axis_names: Union[List[str], Dict[str, int]] = ['X-Axis', 'Y-Axis']  
+    _controller_units: Union[str, List[str]] = 'mm' 
+    _epsilon: Union[float, List[float]] = 0.01 
+    data_actuator_type = DataActuatorType.DataActuator 
 
     params = [{'title': 'COM Port:', 'name': 'com_port', 'type': 'list', 'limits': ports, 'value': port},
               {'title': 'Controller:', 'name': 'controller_str', 'type': 'str', 'value': ''},
