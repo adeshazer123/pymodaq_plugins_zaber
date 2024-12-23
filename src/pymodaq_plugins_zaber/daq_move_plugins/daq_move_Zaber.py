@@ -12,14 +12,19 @@ from zaber_motion.ascii import Connection
 from zaber_motion import Units, Tools
 from zaber_motion.exceptions.connection_failed_exception import ConnectionFailedException
 
+import logging
+logger = logging.getLogger(__name__)
+logger.info("before class DAQ_Move_Zaber")
+
 class DAQ_Move_Zaber(DAQ_Move_base):
 
     # find available COM ports
     ports = Tools.list_serial_ports()
     port = 'COM5' if 'COM5' in ports else ports[0] if len(ports) > 0 else ''
+    logger.info(f"port: {port}")
 
     is_multiaxes = True 
-    _axis_names: Union[List[str], Dict[str, int]] = ['X-Axis', 'Y-Axis']  
+    _axis_names: Union[List[str], Dict[str, int]] = ['X-Axis', 'Y-Axis']
     _controller_units: Union[str, List[str]] = 'mm' 
     _epsilon: Union[float, List[float]] = 0.01 
     data_actuator_type = DataActuatorType.DataActuator 
@@ -31,20 +36,27 @@ class DAQ_Move_Zaber(DAQ_Move_base):
                   {'title': 'Stage Type:', 'name': 'stage_type', 'type': 'str', 'value': '', 'readonly': True},
               ]}
               ] + comon_parameters_fun(is_multiaxes, axis_names = _axis_names, epsilon=_epsilon)
+    logger.info(f"params: {params} loaded")
 
-    # Since we have no way of knowing how many axes are attached to the controller,
-    # we modify axis to be an integer of any value instead of a list of strings.
-    index = next(i for i, item in enumerate(params) if item["name"] == "multiaxes")
-    index2 = next(i for i, item in enumerate(params[index]['children']) if item["name"] == "axis")
-    params[index]['children'][index2]['type'] = 'int'   # override type
-    params[index]['children'][index2]['value'] = 1
-    params[index]['children'][index2]['default'] = 1
-    del params[index]['children'][index2]['limits']     # need to remove limits to avoid bug
+    # # Since we have no way of knowing how many axes are attached to the controller,
+    # # we modify axis to be an integer of any value instead of a list of strings.
+    # index = next(i for i, item in enumerate(params) if item["name"] == "multiaxes")
+    # index2 = next(i for i, item in enumerate(params[index]['children']) if item["name"] == "axis")
+    # params[index]['children'][index2]['type'] = 'int'   # override type
+    # params[index]['children'][index2]['value'] = 1
+    # params[index]['children'][index2]['default'] = 1
+    # del params[index]['children'][index2]['limits']     # need to remove limits to avoid bug
+    #
+    # # Override definition of units parameter to make it user-changeable
+    # index = next(i for i, item in enumerate(params) if item["name"] == "units")
+    # params[index]['readonly'] = False
+    # params[index]['type'] = 'list'
 
-    # Override definition of units parameter to make it user-changeable
-    index = next(i for i, item in enumerate(params) if item["name"] == "units")
-    params[index]['readonly'] = False
-    params[index]['type'] = 'list'
+    def ini_attributes(self):
+
+        # super().__init__(parent, params_state)
+        self.controller = None
+        logger.info("Ini attributes loaded :)")
 
     def ini_stage(self, controller=None):
         """Actuator communication initialization
@@ -64,39 +76,39 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         try:
             self.ini_stage_init(slave_controller=controller)
             if self.is_master:
-                self.status.update(edict(info="", controller=None, initialized=False))
                 try:
                     device_list = Connection.open_serial_port(self.settings.child('com_port').value()).detect_devices()
                 except ConnectionFailedException:
                     raise ConnectionError('Could not connect to Zaber controller on the specified serial port.')
-                
+
                 self.controller = device_list[0]
+                # self.axis_value, self.axis_name?
+                logger.info(f"The device has been updated {self.controller}")
 
 
             # check whether this stage is controlled by a multiaxe controller (to be defined for each plugin)
             # if multiaxes then init the controller here if Master state otherwise use external controller
-            elif self.settings.child('multiaxes', 'ismultiaxes').value() and self.settings.child('multiaxes',
-                                   'multi_status').value() == "Slave":
-                if controller is None:
-                    raise Exception('no controller has been defined externally while this axe is a slave one')
-                else:
-                    self.controller = controller
+            # elif self.settings.child('multiaxes', 'ismultiaxes').value() and self.settings.child('multiaxes',
+            #                        'multi_status').value() == "Slave":
+            #     if controller is None:
+            #         raise Exception('no controller has been defined externally while this axe is a slave one')
+            #     else:
+            #         self.controller = controller
                     
+            #
+            # self.settings.child('controller_str').setValue(str(self.controller))
+            # user_axis =  self.settings.child('multiaxes', 'axis').value()
+            # if user_axis > self.controller.axis_count:
+            #     self.settings.child('multiaxes', 'axis').setValue(1)
+            #     self.emit_status(ThreadCommand('Update_Status', ['Zaber : You requested to use Axis number '+str(user_axis)+
+            #                                                      ' but only '+str(self.controller.axis_count)+
+            #                                                      ' are present. Defaulting to Axis number 1.', 'log']))
+            # self.settings.child('multiaxes', 'axis').setLimits([*range(1,1+self.controller.axis_count)]) # add limits to axes
+            # self.update_axis()
 
-            self.settings.child('controller_str').setValue(str(self.controller))
-            user_axis =  self.settings.child('multiaxes', 'axis').value()
-            if user_axis > self.controller.axis_count:
-                self.settings.child('multiaxes', 'axis').setValue(1)
-                self.emit_status(ThreadCommand('Update_Status', ['Zaber : You requested to use Axis number '+str(user_axis)+
-                                                                 ' but only '+str(self.controller.axis_count)+
-                                                                 ' are present. Defaulting to Axis number 1.', 'log']))
-            self.settings.child('multiaxes', 'axis').setLimits([*range(1,1+self.controller.axis_count)]) # add limits to axes
-            self.update_axis()
-
-            self.status.info = "Zaber controller initialized"
-            self.status.controller = self.controller
+            self.status.info = "Zaber initialized"
             self.status.initialized = True
-            return self.status.initialized, self.status.info
+            return self.status.info, self.status.initialized
 
         except Exception as e:
             self.emit_status(ThreadCommand('Update_Status',[getLineInfo()+ str(e),'log']))
@@ -222,12 +234,12 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         # convert the user set position to the controller position if scaling
         # has been activated by user
         position = self.set_position_with_scaling(position)
-        axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
+        # axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
 
-        try:
-            axis.move_relative(position, unit=self.unit)
-        except Exception as e:
-            self.emit_status(ThreadCommand('Update_Status', [str(e)]))
+        # try:
+        #     axis.move_relative(position, unit=self.unit)
+        # except Exception as e:
+        #     self.emit_status(ThreadCommand('Update_Status', [str(e)]))
 
         self.poll_moving()
         self.check_position()
