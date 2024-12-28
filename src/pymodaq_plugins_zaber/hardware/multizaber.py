@@ -83,6 +83,13 @@ class ZaberMultiple():
             axis.home()
         else: 
             logger.error("Controller is not a valid integer")
+            
+    def stop(self, axis):
+        if (axis > 1):
+            axis = self.controller.get_axis(self.axis[axis-1])
+            axis.stop()
+        else: 
+            logger.error("Controller is not a valid integer")
 
 
 
