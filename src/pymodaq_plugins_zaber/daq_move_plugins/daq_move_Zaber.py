@@ -253,10 +253,12 @@ class DAQ_Move_Zaber(DAQ_Move_base):
             --------
             daq_utils.ThreadCommand
         """
-        axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
-        axis.home()
+        self.controller.home(self.settings.child('multiaxes', 'axis').value())
         self.check_position()
         self.emit_status(ThreadCommand('Update_Status', ['Zaber Actuator '+ self.parent.title + ' (axis '+str(self.settings.child('multiaxes', 'axis').value())+') has been homed']))
+        # axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
+        # axis.home()
+        # self.check_position()
 
 
     def stop_motion(self):
