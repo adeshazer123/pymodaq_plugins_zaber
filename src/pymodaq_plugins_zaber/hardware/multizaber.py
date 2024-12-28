@@ -8,9 +8,18 @@ class ZaberMultiple():
     """ Class to define and add multiple axis to Zaber Actuators"""
 
     def __init__(self, controller):
-        controller_axis = controller
+        self.controller = None
         self.axis = [None, None, None]
         self.unit = [None, None, None]
+    def connect(self, port):
+        """Connect to the Zaber controller"""
+        device_list = Connection.open_serial_port(port)
+        if len(device_list) == 0:
+            logger.error("No devices found")
+            return 
+        self.controller = device_list[0]
+
+
 
         # index = next(i for i, item in enumerate(params) if item["name"] == "multiaxes")
     # index2 = next(i for i, item in enumerate(params[index]['children']) if item["name"] == "axis")
@@ -61,6 +70,12 @@ class ZaberMultiple():
             logger.error("Controller is not a valid integer")
 
     def move_relative(self, position, axis):
+
+        if (axis > 1):
+            axis = self.controller.get_axis(self.axis[axis-1])
+            axis.move_relative(position, self.unit)
+        else: 
+            logger.error("Controller is not a valid integer")
 
 
 
