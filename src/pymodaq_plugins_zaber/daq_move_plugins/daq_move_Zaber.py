@@ -24,7 +24,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
     logger.info(f"port: {port}")
 
     is_multiaxes = True 
-    _axis_names: Union[List[str], Dict[str, int]] = ['X-Axis', 'Y-Axis']
+    _axis_names: Union[List[str], Dict[str, int]] = [{'X-Axis': 1, 'Y-Axis': 2}]
     _controller_units: Union[str, List[str]] = 'mm' 
     _epsilon: Union[float, List[float]] = 0.01 
     data_actuator_type = DataActuatorType.DataActuator 
