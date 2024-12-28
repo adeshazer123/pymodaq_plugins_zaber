@@ -236,6 +236,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         # convert the user set position to the controller position if scaling
         # has been activated by user
         position = self.set_position_with_scaling(position)
+        self.controller.move_relative(position, self.settings.child('multiaxes', 'axis').value())
         # axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
 
         # try:
