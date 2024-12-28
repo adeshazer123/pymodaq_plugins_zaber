@@ -52,15 +52,13 @@ class ZaberMultiple():
         self.unit[axis -1] = units
 
     def move_abs(self, position, axis):
-        controller = int(axis)
 
-
-        if (controller > 1):
-            axis = self.controller.get_axis(self.axis[controller-1])
+        if (axis > 1):
+            axis = self.controller.get_axis(self.axis[axis-1])
             axis.move_absolute(position, self.unit)
 
         else:
-            logger.error("Controller is a valid integer")
+            logger.error("Controller is not a valid integer")
 
     def move_relative(self, position, axis):
 
