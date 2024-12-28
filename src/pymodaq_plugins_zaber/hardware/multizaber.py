@@ -13,25 +13,12 @@ class ZaberMultiple():
         self.unit = [None, None, None]
     def connect(self, port):
         """Connect to the Zaber controller"""
-        device_list = Connection.open_serial_port(port)
+        device_list = Connection.open_serial_port(port).detect_devices()
         if len(device_list) == 0:
             logger.error("No devices found")
             return 
         self.controller = device_list[0]
 
-
-
-        # index = next(i for i, item in enumerate(params) if item["name"] == "multiaxes")
-    # index2 = next(i for i, item in enumerate(params[index]['children']) if item["name"] == "axis")
-    # params[index]['children'][index2]['type'] = 'int'   # override type
-    # params[index]['children'][index2]['value'] = 1
-    # params[index]['children'][index2]['default'] = 1
-    # del params[index]['children'][index2]['limits']     # need to remove limits to avoid bug
-    #
-    # # Override definition of units parameter to make it user-changeable
-    # index = next(i for i, item in enumerate(params) if item["name"] == "units")
-    # params[index]['readonly'] = False
-    # params[index]['type'] = 'list'
     def set_units(self, units, axis):
         """Sets the units of the Zaber actuators
             um: micrometer
@@ -83,7 +70,7 @@ class ZaberMultiple():
             axis.home()
         else: 
             logger.error("Controller is not a valid integer")
-            
+
     def stop(self, axis):
         if (axis > 1):
             axis = self.controller.get_axis(self.axis[axis-1])
