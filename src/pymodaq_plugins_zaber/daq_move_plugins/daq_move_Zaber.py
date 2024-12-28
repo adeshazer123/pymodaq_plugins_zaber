@@ -11,6 +11,7 @@ from easydict import EasyDict as edict  # type of dict
 from zaber_motion.ascii import Connection
 from zaber_motion import Units, Tools
 from zaber_motion.exceptions.connection_failed_exception import ConnectionFailedException
+from pymodaq_plugins_zaber.hardware.multizaber import ZaberMultiple
 
 import logging
 logger = logging.getLogger(__name__)
@@ -55,7 +56,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
     def ini_attributes(self):
 
         # super().__init__(parent, params_state)
-        self.controller = None
+        self.controller = ZaberMultiple()
         logger.info("Ini attributes loaded :)")
 
     def ini_stage(self, controller=None):
@@ -76,14 +77,15 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         try:
             self.ini_stage_init(slave_controller=controller)
             if self.is_master:
-                try:
-                    device_list = Connection.open_serial_port(self.settings.child('com_port').value()).detect_devices()
-                except ConnectionFailedException:
-                    raise ConnectionError('Could not connect to Zaber controller on the specified serial port.')
+                self.controller = self.controller.connect(self.settings.child('com_port').value())
+                # try:
+                #     device_list = Connection.open_serial_port(self.settings.child('com_port').value()).detect_devices()
+                # except ConnectionFailedException:
+                #     raise ConnectionError('Could not connect to Zaber controller on the specified serial port.')
 
-                self.controller = device_list[0]
-                # self.axis_value, self.axis_name?
-                logger.info(f"The device has been updated {self.controller}")
+                # self.controller = device_list[0]
+                # # self.axis_value, self.axis_name?
+                # logger.info(f"The device has been updated {self.controller}")
 
 
             # check whether this stage is controlled by a multiaxe controller (to be defined for each plugin)
