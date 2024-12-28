@@ -269,9 +269,10 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         --------
         move_done
         """
-        axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
-        axis.stop()
-        self.emit_status(ThreadCommand('Update_Status', ['Stopping Zaber actuator '+ self.parent.title + ' (axis '+str(self.settings.child('multiaxes', 'axis').value())+').']))
+        self.controller.stop(self.settings.child('multiaxes', 'axis').value())
+        self.emit_status(ThreadCommand('Update_Status', ['Zaber Actuator '+ self.parent.title + ' (axis '+str(self.settings.child('multiaxes', 'axis').value())+') has been stopped']))
+        # axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
+        # axis.stop()
 
 if __name__ == '__main__':
     main(__file__)
