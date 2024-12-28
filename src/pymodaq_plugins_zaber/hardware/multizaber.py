@@ -31,9 +31,24 @@ class ZaberMultiple():
             inch: inches
             ang: angle
             """
-        self.unit[int(axis) - 1] = units
-
-
+        if units in ['um', 'nm', 'mm', 'in', 'cm', 'rad', 'deg']:
+            if units == 'um': 
+                units = Units.LENGTH_MICROMETERS
+            if units == 'nm': 
+                units = Units.LENGTH_NANOMETERS
+            if units == 'mm': 
+                units = Units.LENGTH_MILLIMETERS
+            if units == 'in':
+                units = Units.LENGTH_INCHES 
+            if units == 'cm':
+                units = Units.LENGTH_CENTIMETERS 
+            if units == 'rad':
+                units = Units.ANGLE_RADIANS
+            if units == 'deg':
+                units = Units.ANGLE_DEGREES
+        else: 
+            logger.error("Units not recognized")
+            return
 
     def move_abs(self, position, axis):
         controller = int(axis)
