@@ -49,6 +49,7 @@ class ZaberMultiple():
         else: 
             logger.error("Units not recognized")
             return
+        self.unit[axis -1] = units
 
     def move_abs(self, position, axis):
         controller = int(axis)
