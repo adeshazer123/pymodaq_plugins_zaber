@@ -3,6 +3,15 @@
 # from pymodaq.control_modules.move_utility_classes import comon_parameters_fun, main  # common set of parameters for all actuators
 from typing import Union, List, Dict
 
+
+
+"""
+Update Epsilon parameter in the commit_Settings to change based on the units
+Change units to be infinity because we don't know the amount of stages
+Update _axis_names to dictionary
+Look at rest of code to ploish it"""
+
+
 from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, comon_parameters_fun, main, DataActuatorType,\
     DataActuator  # common set of parameters for all actuators
 from pymodaq.utils.daq_utils import ThreadCommand, getLineInfo
@@ -25,8 +34,8 @@ class DAQ_Move_Zaber(DAQ_Move_base):
     logger.info(f"port: {port}")
 
     is_multiaxes = True 
-    _axis_names: Union[List[str], Dict[str, int]] = [{'Linear': 1, 'Rotary': 2}]
-    _controller_units: Union[str, List[str]] = 'mm' 
+    _axis_names: Union[List[str], Dict[str, int]] = {'Linear': 1, 'Rotary': 2}
+    _controller_units: Union[str, List[str]] = '' 
     _epsilon: Union[float, List[float]] = 0.01 
     data_actuator_type = DataActuatorType.DataActuator 
 
@@ -168,6 +177,11 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         """
         if param.name() == 'axis':
             self.update_axis()
+            self.check_position()
+        elif param.name() == 'units': 
+            axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
+            self.controller.set_units(self.settings.child('units').value(), self.settings.child('multiaxes', 'axis').value())
+            self.settings.child('epsilon').setValue(axis.settings.convert_from_native_units('pos', self.settings.child('epsilon').value(), self.unit))
             self.check_position()
 
         # # DK - I prefer to delete this because daq_move now has the unit feature
