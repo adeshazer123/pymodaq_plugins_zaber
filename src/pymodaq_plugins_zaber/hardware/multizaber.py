@@ -11,6 +11,11 @@ class ZaberMultiple():
         self.controller = None
         self.axis = []
         self.unit = []
+    def get_units(self): 
+        """Returns the units of the Zaber actuators"""
+    def get_axes(self, axis): 
+        """Returns the axes of the Zaber actuator"""
+        return self.axis[axis-1]
     def connect(self, port):
         """Connect to the Zaber controller"""
         device_list = Connection.open_serial_port(port).detect_devices()
@@ -18,8 +23,13 @@ class ZaberMultiple():
             logger.error("No devices found")
             return 
         self.controller = device_list[0]
-        self.axis = [axis for axis in self.controller.get_axes()]
-        self.unit = [axis.get_units() for axis in self.controller.get_axes()]
+
+        for device in device_list: 
+            for axis in device.get_axes():
+                self.axis.append(axis)
+                self.unit.append(axis.get_units())
+        # self.axis = [axis for axis in self.controller.get_axes()]
+        # self.unit = [axis.get_units() for axis in self.controller.get_axes()]
 
     def set_units(self, units, axis):
         """Sets the units of the Zaber actuators
