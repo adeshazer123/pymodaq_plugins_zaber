@@ -9,8 +9,7 @@ logger = logging.getLogger(__name__)
 class ZaberMultiple: 
     """ Class to define and add multiple axis to Zaber Actuators"""
 
-    def __init__(self,
-                 controller):  # DK - we do not need to add controller as an attribute unless we want users to input
+    def __init__(self):  
         self.controller = None
         self.axis = []
         self.unit = []
@@ -73,7 +72,7 @@ class ZaberMultiple:
             axis.move_absolute(position, self.unit)
 
         else:
-            logger.error("Controller is not a valid integer") # DK - this message could be "Axis is not ..." rather than controller. Same below.
+            logger.error("Axis is not a valid integer") # DK - this message could be "Axis is not ..." rather than controller. Same below.
 
     def move_relative(self, position, axis):
 
@@ -81,14 +80,14 @@ class ZaberMultiple:
             axis = self.controller.get_axis(self.axis[axis - 1])
             axis.move_relative(position, self.unit)
         else:
-            logger.error("Controller is not a valid integer")
+            logger.error("Axis is not a valid integer")
     
     def get_position(self, axis):
         if (axis > 0): 
             axis = self.controller.get_axis(self.axis[axis - 1])
             return axis.get_position()
         else:
-            logger.error("Controller is not a valid integer")
+            logger.error("Axis is not a valid integer")
 
     def home(self, axis):
         if (axis > 0): 
