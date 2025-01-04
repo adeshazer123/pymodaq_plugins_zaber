@@ -82,6 +82,13 @@ class ZaberMultiple:
             axis.move_relative(position, self.unit)
         else:
             logger.error("Controller is not a valid integer")
+    
+    def get_position(self, axis):
+        if (axis > 0): 
+            axis = self.controller.get_axis(self.axis[axis - 1])
+            return axis.get_position()
+        else:
+            logger.error("Controller is not a valid integer")
 
     def home(self, axis):
         if (axis > 0): 
@@ -96,5 +103,3 @@ class ZaberMultiple:
             axis.stop()
         else:
             logger.error("Controller is not a valid integer")
-
-    # DK - Add a method to get the current position to be used for get_actuator_value in daq_move.
