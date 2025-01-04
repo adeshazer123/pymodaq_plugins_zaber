@@ -6,7 +6,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class ZaberMultiple():  # DK - delete parenthesis after the class name
+class ZaberMultiple: 
     """ Class to define and add multiple axis to Zaber Actuators"""
 
     def __init__(self,
@@ -67,7 +67,7 @@ class ZaberMultiple():  # DK - delete parenthesis after the class name
 
     def move_abs(self, position, axis):
 
-        if (axis > 1): # DK - axis can be 1. correct ">"
+        if (axis > 0): # DK - axis can be 1. correct ">"
             # DK - can you check if self.controller has get_axis method? or did you want to use self.get_axis?
             axis = self.controller.get_axis(self.axis[axis - 1]) # DK - can we refactor the next line to be self.axis[axis - 1].move_absolute(position, self.unit)? Similarly, the following methods, too.
             axis.move_absolute(position, self.unit)
@@ -77,7 +77,7 @@ class ZaberMultiple():  # DK - delete parenthesis after the class name
 
     def move_relative(self, position, axis):
 
-        if (axis > 1): # DK - axis can be 1. correct ">"
+        if (axis > 0): # DK - axis can be 1. correct ">"
             axis = self.controller.get_axis(self.axis[axis - 1])
             axis.move_relative(position, self.unit)
         else:
