@@ -77,21 +77,21 @@ class ZaberMultiple:
 
     def move_relative(self, position, axis):
 
-        if (axis > 0): # DK - axis can be 1. correct ">"
+        if (axis > 0): 
             axis = self.controller.get_axis(self.axis[axis - 1])
             axis.move_relative(position, self.unit)
         else:
             logger.error("Controller is not a valid integer")
 
     def home(self, axis):
-        if (axis > 1): # DK - axis can be 1. correct ">"
+        if (axis > 0): 
             axis = self.controller.get_axis(self.axis[axis - 1])
             axis.home()
         else:
             logger.error("Controller is not a valid integer")
 
     def stop(self, axis):
-        if (axis > 1): # DK - axis can be 1. correct ">"
+        if (axis > 0): 
             axis = self.controller.get_axis(self.axis[axis - 1])
             axis.stop()
         else:
