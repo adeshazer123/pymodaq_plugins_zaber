@@ -68,37 +68,37 @@ class ZaberMultiple:
 
         if (axis > 0): # DK - axis can be 1. correct ">"
             # DK - can you check if self.controller has get_axis method? or did you want to use self.get_axis?
-            axis = self.controller.get_axis(int(self.controller_axis[axis - 1])) # do this or import only axis from GUI
+            axis = self.controller.get_axis(axis) # do this or import only axis from GUI
             axis.move_absolute(position, self.unit)
 
         else:
-            logger.error("Axis is not a valid integer") # DK - this message could be "Axis is not ..." rather than controller. Same below.
-
+            logger.error("Axis is not a valid integer")
+            
     def move_relative(self, position, axis):
 
         if (axis > 0): 
-            axis = self.controller.get_axis(self.controller_axis[axis - 1])
+            axis = self.controller.get_axis(axis) #self.controller_axis[axis - 1]
             axis.move_relative(position, self.unit)
         else:
             logger.error("Axis is not a valid integer")
     
     def get_position(self, axis):
         if (axis > 0): 
-            axis = self.controller.get_axis(self.controller_axis[axis - 1])
+            axis = self.controller.get_axis(axis)
             return axis.get_position()
         else:
             logger.error("Axis is not a valid integer")
 
     def home(self, axis):
         if (axis > 0): 
-            axis = self.controller.get_axis(self.controller_axis[axis - 1])
+            axis = self.controller.get_axis(axis)
             axis.home()
         else:
             logger.error("Controller is not a valid integer")
 
     def stop(self, axis):
         if (axis > 0): 
-            axis = self.controller.get_axis(self.controller_axis[axis - 1])
+            axis = self.controller.get_axis(axis)
             axis.stop()
         else:
             logger.error("Controller is not a valid integer")
