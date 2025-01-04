@@ -32,7 +32,7 @@ class ZaberMultiple:
         self.controller = device_list[0]
 
         for device in device_list:
-            for axis in device.get_axis():
+            for axis in device.get_axis(): # DK - add an appropriate index of 'axis_number' to get_axis
                 self.axis.append(axis)
                 self.unit.append(axis.get_units())
 
