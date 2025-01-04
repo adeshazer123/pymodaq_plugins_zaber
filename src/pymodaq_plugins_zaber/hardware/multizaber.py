@@ -11,12 +11,12 @@ class ZaberMultiple:
 
     def __init__(self):  
         self.controller = None
-        self.axis = []
+        self.controller_axis = []
         self.unit = []
 
     def get_axis(self, axis):  # The same names of axis (= self.axis_value) and self.axis may be confusing. I would like to rename the attribute or the object name.
         """Return Zaber Actuator Axis"""
-        return self.axis[axis - 1] # DK - See my comment in move_abs. This method may be redundant.
+        return self.controller_axis[axis - 1] # DK - See my comment in move_abs. This method may be redundant.
 
     def get_units(self, axis):
         """Return Zaber Actuator Units"""
@@ -68,7 +68,7 @@ class ZaberMultiple:
 
         if (axis > 0): # DK - axis can be 1. correct ">"
             # DK - can you check if self.controller has get_axis method? or did you want to use self.get_axis?
-            axis = self.controller.get_axis(self.axis[axis - 1]) # DK - can we refactor the next line to be self.axis[axis - 1].move_absolute(position, self.unit)? Similarly, the following methods, too.
+            axis = self.controller.get_axis(self.controller_axis[axis - 1]) # DK - can we refactor the next line to be self.axis[axis - 1].move_absolute(position, self.unit)? Similarly, the following methods, too.
             axis.move_absolute(position, self.unit)
 
         else:
@@ -77,28 +77,28 @@ class ZaberMultiple:
     def move_relative(self, position, axis):
 
         if (axis > 0): 
-            axis = self.controller.get_axis(self.axis[axis - 1])
+            axis = self.controller.get_axis(self.controller_axis[axis - 1])
             axis.move_relative(position, self.unit)
         else:
             logger.error("Axis is not a valid integer")
     
     def get_position(self, axis):
         if (axis > 0): 
-            axis = self.controller.get_axis(self.axis[axis - 1])
+            axis = self.controller.get_axis(self.controller_axis[axis - 1])
             return axis.get_position()
         else:
             logger.error("Axis is not a valid integer")
 
     def home(self, axis):
         if (axis > 0): 
-            axis = self.controller.get_axis(self.axis[axis - 1])
+            axis = self.controller.get_axis(self.controller_axis[axis - 1])
             axis.home()
         else:
             logger.error("Controller is not a valid integer")
 
     def stop(self, axis):
         if (axis > 0): 
-            axis = self.controller.get_axis(self.axis[axis - 1])
+            axis = self.controller.get_axis(self.controller_axis[axis - 1])
             axis.stop()
         else:
             logger.error("Controller is not a valid integer")
