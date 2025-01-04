@@ -68,7 +68,7 @@ class ZaberMultiple:
 
         if (axis > 0): # DK - axis can be 1. correct ">"
             # DK - can you check if self.controller has get_axis method? or did you want to use self.get_axis?
-            axis = self.controller.get_axis(self.controller_axis[axis - 1]) # DK - can we refactor the next line to be self.axis[axis - 1].move_absolute(position, self.unit)? Similarly, the following methods, too.
+            axis = self.controller.get_axis(int(self.controller_axis[axis - 1])) # do this or import only axis from GUI
             axis.move_absolute(position, self.unit)
 
         else:
