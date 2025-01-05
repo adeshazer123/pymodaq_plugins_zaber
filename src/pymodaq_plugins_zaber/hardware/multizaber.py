@@ -10,7 +10,7 @@ class ZaberMultiple:
     """ Class to define and add multiple axis to Zaber Actuators"""
 
     def __init__(self):  
-        self.controller = None
+        self.controller = []
         self.controller_axis = []
         self.unit = []
 
@@ -29,12 +29,16 @@ class ZaberMultiple:
         if len(device_list) == 0:
             logger.error("No devices found")
 
-        self.controller = device_list[0]
-
-        for device in device_list:
-            for axis in device.get_axis(): # DK - add an appropriate index of 'axis_number' to get_axis
-                self.axis.append(axis)
-                self.unit.append(axis.get_units())
+        for i, device in enumerate(device_list):
+            i += 1
+            # self.controller.append(device)
+            axis_control = device.get_axis(1)
+            self.controller_axis.append(axis_control)
+            self.unit.append('')
+            if axis_control.axis_type.value == 1:
+                self.set_units('um', i)
+            elif axis_control.axis_type.value == 2: 
+                self.set_units('deg', i)
 
     def set_units(self, units, axis):
         """Sets the units of the Zaber actuators
@@ -46,30 +50,29 @@ class ZaberMultiple:
             """
         if units in ['um', 'nm', 'mm', 'in', 'cm', 'rad', 'deg']:
             if units == 'um':
-                units = Units.LENGTH_MICROMETERS
+                units = Units.LENGTH_MICROMETRES
             if units == 'nm':
-                units = Units.LENGTH_NANOMETERS
+                units = Units.LENGTH_NANOMETRES
             if units == 'mm':
-                units = Units.LENGTH_MILLIMETERS
+                units = Units.LENGTH_MILLIMETRES
             if units == 'in':
                 units = Units.LENGTH_INCHES
             if units == 'cm':
-                units = Units.LENGTH_CENTIMETERS
+                units = Units.LENGTH_CENTIMETRES
             if units == 'rad':
                 units = Units.ANGLE_RADIANS
             if units == 'deg':
                 units = Units.ANGLE_DEGREES
         else:
             logger.error("Units not recognized")
-            return
-        self.unit[axis - 1] = units
+
+        self.unit[axis-1] = units
 
     def move_abs(self, position, axis):
 
-        if (axis > 0): # DK - axis can be 1. correct ">"
-            # DK - can you check if self.controller has get_axis method? or did you want to use self.get_axis?
-            # axis = self.controller.get_axis(axis) # do this or import only axis from GUI
-            axis.move_absolute(position, self.unit)
+        if (axis > 0):
+            axes = self.controller_axis[axis-1]            
+            axes.move_absolute(position, self.unit[axis-1])
 
         else:
             logger.error("Axis is not a valid integer")
@@ -77,28 +80,29 @@ class ZaberMultiple:
     def move_relative(self, position, axis):
 
         if (axis > 0): 
-            # axis = self.controller.get_axis(axis) #self.controller_axis[axis - 1]
-            axis.move_relative(position, self.unit)
+            axes = self.controller_axis[axis-1]
+            axes.move_relative(position, self.unit[axis-1])
         else:
             logger.error("Axis is not a valid integer")
     
     def get_position(self, axis):
         if (axis > 0): 
-            # axis = self.controller.get_axis(axis)
-            return axis.get_position()
+            axes = self.controller_axis[axis-1]
+            return axes.get_position()
+        
         else:
             logger.error("Axis is not a valid integer")
 
     def home(self, axis):
         if (axis > 0): 
-            # axis = self.controller.get_axis(axis)
-            axis.home()
+            axes = self.controller_axis[axis-1]
+            axes.home()
         else:
             logger.error("Controller is not a valid integer")
 
     def stop(self, axis):
         if (axis > 0): 
-            # axis = self.controller.get_axis(axis)
-            axis.stop()
+            axes = self.controller_axis[axis-1]
+            axes.stop()
         else:
             logger.error("Controller is not a valid integer")
