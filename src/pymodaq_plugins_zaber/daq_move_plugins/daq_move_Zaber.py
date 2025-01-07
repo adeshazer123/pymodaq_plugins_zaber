@@ -48,20 +48,6 @@ class DAQ_Move_Zaber(DAQ_Move_base):
               ] + comon_parameters_fun(is_multiaxes, axis_names = _axis_names, epsilon=_epsilon)
     logger.info(f"params: {params} loaded")
 
-    # # Since we have no way of knowing how many axes are attached to the controller,
-    # # we modify axis to be an integer of any value instead of a list of strings.
-    # index = next(i for i, item in enumerate(params) if item["name"] == "multiaxes")
-    # index2 = next(i for i, item in enumerate(params[index]['children']) if item["name"] == "axis")
-    # params[index]['children'][index2]['type'] = 'int'   # override type
-    # params[index]['children'][index2]['value'] = 1
-    # params[index]['children'][index2]['default'] = 1
-    # del params[index]['children'][index2]['limits']     # need to remove limits to avoid bug
-    #
-    # # Override definition of units parameter to make it user-changeable
-    # index = next(i for i, item in enumerate(params) if item["name"] == "units")
-    # params[index]['readonly'] = False
-    # params[index]['type'] = 'list'
-
     def ini_attributes(self):
 
         # super().__init__(parent, params_state)
