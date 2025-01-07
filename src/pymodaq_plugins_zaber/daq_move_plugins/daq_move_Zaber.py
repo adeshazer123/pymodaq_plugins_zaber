@@ -87,35 +87,6 @@ class DAQ_Move_Zaber(DAQ_Move_base):
             self.ini_stage_init(slave_controller=controller)
             if self.is_master:
                 self.controller = self.controller.connect(self.settings.child('com_port').value())
-                # try:
-                #     device_list = Connection.open_serial_port(self.settings.child('com_port').value()).detect_devices()
-                # except ConnectionFailedException:
-                #     raise ConnectionError('Could not connect to Zaber controller on the specified serial port.')
-
-                # self.controller = device_list[0]
-                # # self.axis_value, self.axis_name?
-                # logger.info(f"The device has been updated {self.controller}")
-
-
-            # check whether this stage is controlled by a multiaxe controller (to be defined for each plugin)
-            # if multiaxes then init the controller here if Master state otherwise use external controller
-            # elif self.settings.child('multiaxes', 'ismultiaxes').value() and self.settings.child('multiaxes',
-            #                        'multi_status').value() == "Slave":
-            #     if controller is None:
-            #         raise Exception('no controller has been defined externally while this axe is a slave one')
-            #     else:
-            #         self.controller = controller
-                    
-            #
-            # self.settings.child('controller_str').setValue(str(self.controller))
-            # user_axis =  self.settings.child('multiaxes', 'axis').value()
-            # if user_axis > self.controller.axis_count:
-            #     self.settings.child('multiaxes', 'axis').setValue(1)
-            #     self.emit_status(ThreadCommand('Update_Status', ['Zaber : You requested to use Axis number '+str(user_axis)+
-            #                                                      ' but only '+str(self.controller.axis_count)+
-            #                                                      ' are present. Defaulting to Axis number 1.', 'log']))
-            # self.settings.child('multiaxes', 'axis').setLimits([*range(1,1+self.controller.axis_count)]) # add limits to axes
-            # self.update_axis()
 
             info = "Zaber initialized"
             initialized = True
