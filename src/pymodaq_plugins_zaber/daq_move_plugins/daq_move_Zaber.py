@@ -156,12 +156,8 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         -------
         float: The position obtained after scaling conversion.
         """
-        axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
-        pos = axis.get_position(unit=self.unit)
-
+        pos = DataActuator(data=self.controller.get_position(self.settings.child('multiaxes', 'axis').value()))  # when writing your own plugin replace this line
         pos = self.get_position_with_scaling(pos)
-        self.current_position = pos
-        self.emit_status(ThreadCommand('check_position',[pos]))
         return pos
 
 
