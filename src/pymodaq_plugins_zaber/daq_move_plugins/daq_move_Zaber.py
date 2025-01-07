@@ -224,12 +224,6 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         position = self.set_position_with_scaling(position)  # apply scaling if the user specified one
         self.controller.move_abs(position, self.settings.child('multiaxes', 'axis').value())
 
-        # axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
-        # try:
-        #     axis.move_absolute(position, unit=self.unit)
-        # except Exception as e:
-        #     self.emit_status(ThreadCommand('Update_Status', [str(e)]))
-
         self.poll_moving()  # start a loop to poll the current actuator value and compare it with target position
         self.check_position()
 
