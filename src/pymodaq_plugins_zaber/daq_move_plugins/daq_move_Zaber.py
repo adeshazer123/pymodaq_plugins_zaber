@@ -117,15 +117,15 @@ class DAQ_Move_Zaber(DAQ_Move_base):
             # self.settings.child('multiaxes', 'axis').setLimits([*range(1,1+self.controller.axis_count)]) # add limits to axes
             # self.update_axis()
 
-            self.status.info = "Zaber initialized"
-            self.status.initialized = True
-            return self.status.info, self.status.initialized
+            info = "Zaber initialized"
+            initialized = True
+            return info, initialized
 
         except Exception as e:
             self.emit_status(ThreadCommand('Update_Status',[getLineInfo()+ str(e),'log']))
-            self.status.info = getLineInfo()+ str(e)
-            self.status.initialized = False
-            return self.status
+            info = getLineInfo()+ str(e)
+            initialized = False
+            return info, initialized
 
     def update_axis(self):
         axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
