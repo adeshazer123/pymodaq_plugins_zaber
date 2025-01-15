@@ -88,7 +88,7 @@ class ZaberMultiple:
     def get_position(self, axis):
         if (axis > 0): 
             axes = self.controller_axis[axis-1]
-            return axes.get_position()
+            return axes.get_position(self.unit[axis-1])
         
         else:
             logger.error("Axis is not a valid integer")
