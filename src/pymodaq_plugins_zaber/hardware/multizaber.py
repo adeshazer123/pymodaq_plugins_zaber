@@ -13,6 +13,7 @@ class ZaberMultiple:
         self.controller = []
         self.controller_axis = []
         self.unit = []
+        self.stage_type = []
 
     def get_axis(self, axis):  # The same names of axis (= self.axis_value) and self.axis may be confusing. I would like to rename the attribute or the object name.
         """Return Zaber Actuator Axis"""
@@ -34,6 +35,8 @@ class ZaberMultiple:
             # self.controller.append(device)
             axis_control = device.get_axis(1)
             self.controller_axis.append(axis_control)
+            axis_type = str(axis_control.axis_type).replace("AxisType.", "")
+            self.stage_type.append(axis_type)
             self.unit.append('')
             if axis_control.axis_type.value == 1:
                 self.set_units('um', i)
@@ -106,3 +109,6 @@ class ZaberMultiple:
             axes.stop()
         else:
             logger.error("Controller is not a valid integer")
+            
+    def stage_name(self,axis): 
+       return self.stage_type[axis-1]

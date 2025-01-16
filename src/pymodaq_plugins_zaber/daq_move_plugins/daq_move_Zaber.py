@@ -16,7 +16,7 @@ from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, comon_pa
     DataActuator  # common set of parameters for all actuators
 from pymodaq.utils.daq_utils import ThreadCommand, getLineInfo
 from pymodaq.utils.parameter import Parameter
-from easydict import EasyDict as edict  # type of dict
+# from easydict import EasyDict as edict  # type of dict
 from zaber_motion.ascii import Connection
 from zaber_motion import Units, Tools
 from zaber_motion.exceptions.connection_failed_exception import ConnectionFailedException
@@ -34,8 +34,8 @@ class DAQ_Move_Zaber(DAQ_Move_base):
     logger.info(f"port: {port}")
 
     is_multiaxes = True 
-    _axis_names: Union[List[str], Dict[str, int]] = {'Linear': 1, 'Rotary': 2}
-    _controller_units: Union[str, List[str]] = '' 
+    _axis_names: Union[List[str], Dict[str, int]] = {"1":1, "2":2} # DK - use device_list to populate.
+    _controller_units: Union[str, List[str]] = ' ' 
     _epsilon: Union[float, List[float]] = 0.01 
     data_actuator_type = DataActuatorType.DataActuator 
 
@@ -44,6 +44,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
               {'title': 'Stage Properties:', 'name': 'stage_properties', 'type': 'group', 'children': [
                   {'title': 'Stage Name:', 'name': 'stage_name', 'type': 'str', 'value': '', 'readonly': True},
                   {'title': 'Stage Type:', 'name': 'stage_type', 'type': 'str', 'value': '', 'readonly': True},
+                  {'title': 'Units', 'name': 'units', 'type': 'list', 'limits': ['um', 'nm', 'mm', 'in', 'cm', 'rad', 'deg']  }
               ]}
               ] + comon_parameters_fun(is_multiaxes, axis_names = _axis_names, epsilon=_epsilon)
     logger.info(f"params: {params} loaded")
@@ -65,7 +66,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
     def ini_attributes(self):
 
         # super().__init__(parent, params_state)
-        self.controller = ZaberMultiple()
+        self.controller = None
         logger.info("Ini attributes loaded :)")
 
     def ini_stage(self, controller=None):
@@ -86,7 +87,10 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         try:
             self.ini_stage_init(slave_controller=controller)
             if self.is_master:
-                self.controller = self.controller.connect(self.settings.child('com_port').value())
+                self.controller = ZaberMultiple()
+                self.controller.connect(self.settings.child('com_port').value())
+                self.controller.set_units(self.settings.child('units').value(), self.axis_value)
+                self.controller.stage_name(self.axis_value)
                 # try:
                 #     device_list = Connection.open_serial_port(self.settings.child('com_port').value()).detect_devices()
                 # except ConnectionFailedException:
@@ -176,13 +180,14 @@ class DAQ_Move_Zaber(DAQ_Move_base):
             | Called after a param_tree_changed signal from DAQ_Move_main.
         """
         if param.name() == 'axis':
-            self.update_axis()
-            self.check_position()
+            self.controller.set_units(self.settings.child('units').value(), self.settings.child('multiaxes', 'axis').value())
+            self.controller.stage_type(axis.axis_type.value)
+
         elif param.name() == 'units': 
             axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
             self.controller.set_units(self.settings.child('units').value(), self.settings.child('multiaxes', 'axis').value())
+            self.controller.stage_type(axis.axis_type.value)
             self.settings.child('epsilon').setValue(axis.settings.convert_from_native_units('pos', self.settings.child('epsilon').value(), self.unit))
-            self.check_position()
 
         # # DK - I prefer to delete this because daq_move now has the unit feature
         # elif param.name() == 'units':
@@ -234,8 +239,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         # except Exception as e:
         #     self.emit_status(ThreadCommand('Update_Status', [str(e)]))
 
-        self.poll_moving()  # start a loop to poll the current actuator value and compare it with target position
-        self.check_position()
+        # self.poll_moving()  # start a loop to poll the current actuator value and compare it with target position
 
     def move_rel(self, position): 
         """ Move the actuator to the relative target actuator value defined by position
@@ -259,8 +263,8 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         # except Exception as e:
         #     self.emit_status(ThreadCommand('Update_Status', [str(e)]))
 
-        self.poll_moving()
-        self.check_position()
+        # self.poll_moving()
+        # self.check_position()
 
     def move_home(self):
         """
