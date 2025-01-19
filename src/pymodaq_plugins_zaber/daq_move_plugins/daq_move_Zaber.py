@@ -146,7 +146,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         -------
         float: The position obtained after scaling conversion.
         """
-        pos = DataActuator(data=self.controller.get_position(self.settings.child('multiaxes', 'axis').value()))  # when writing your own plugin replace this line
+        pos = DataActuator(data=self.controller.get_position(self.axis_value))  # when writing your own plugin replace this line
         pos = self.get_position_with_scaling(pos)
         return pos
 
@@ -162,7 +162,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
             | Called after a param_tree_changed signal from DAQ_Move_main.
         """
         if param.name() == 'axis':
-            self.controller.set_units(self.settings.child('units').value(), self.settings.child('multiaxes', 'axis').value())
+            self.controller.set_units(self.settings.child('units').value(), self.axis_value)
             self.controller.stage_type(axis.axis_type.value)
 
         elif param.name() == 'units': 
@@ -213,7 +213,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         self.target_position = position
 
         position = self.set_position_with_scaling(position)  # apply scaling if the user specified one
-        self.controller.move_abs(position, self.settings.child('multiaxes', 'axis').value())
+        self.controller.move_abs(position, self.axis_value)
 
         # axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
         # try:
@@ -237,7 +237,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         # convert the user set position to the controller position if scaling
         # has been activated by user
         position = self.set_position_with_scaling(position)
-        self.controller.move_relative(position, self.settings.child('multiaxes', 'axis').value())
+        self.controller.move_relative(position, self.axis_value)
         # axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
 
         # try:
@@ -255,9 +255,9 @@ class DAQ_Move_Zaber(DAQ_Move_base):
             --------
             daq_utils.ThreadCommand
         """
-        self.controller.home(self.settings.child('multiaxes', 'axis').value())
+        self.controller.home(self.axis_value)
         self.check_position()
-        self.emit_status(ThreadCommand('Update_Status', ['Zaber Actuator '+ self.parent.title + ' (axis '+str(self.settings.child('multiaxes', 'axis').value())+') has been homed']))
+        #self.emit_status(ThreadCommand('Update_Status', ['Zaber Actuator '+ self.parent.title + ' (axis '+str(self.settings.child('multiaxes', 'axis').value())+') has been homed']))
         # axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
         # axis.home()
         # self.check_position()
@@ -271,8 +271,8 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         --------
         move_done
         """
-        self.controller.stop(self.settings.child('multiaxes', 'axis').value())
-        self.emit_status(ThreadCommand('Update_Status', ['Zaber Actuator '+ self.parent.title + ' (axis '+str(self.settings.child('multiaxes', 'axis').value())+') has been stopped']))
+        self.controller.stop(self.axis_value)
+        #self.emit_status(ThreadCommand('Update_Status', ['Zaber Actuator '+ self.parent.title + ' (axis '+str(self.settings.child('multiaxes', 'axis').value())+') has been stopped']))
         # axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
         # axis.stop()
 
