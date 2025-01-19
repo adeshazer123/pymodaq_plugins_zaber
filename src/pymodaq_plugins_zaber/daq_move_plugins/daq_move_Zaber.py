@@ -16,7 +16,7 @@ from pymodaq.control_modules.move_utility_classes import DAQ_Move_base, comon_pa
     DataActuator  # common set of parameters for all actuators
 from pymodaq.utils.daq_utils import ThreadCommand, getLineInfo
 from pymodaq.utils.parameter import Parameter
-from easydict import EasyDict as edict  # type of dict
+# from easydict import EasyDict as edict  # type of dict
 from zaber_motion.ascii import Connection
 from zaber_motion import Units, Tools
 from zaber_motion.exceptions.connection_failed_exception import ConnectionFailedException
@@ -34,8 +34,8 @@ class DAQ_Move_Zaber(DAQ_Move_base):
     logger.info(f"port: {port}")
 
     is_multiaxes = True 
-    _axis_names: Union[List[str], Dict[str, int]] = {'Linear': 1, 'Rotary': 2}
-    _controller_units: Union[str, List[str]] = '' 
+    _axis_names: Union[List[str], Dict[str, int]] = {"1":1, "2":2} # DK - use device_list to populate.
+    _controller_units: Union[str, List[str]] = ' ' 
     _epsilon: Union[float, List[float]] = 0.01 
     data_actuator_type = DataActuatorType.DataActuator 
 
@@ -44,6 +44,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
               {'title': 'Stage Properties:', 'name': 'stage_properties', 'type': 'group', 'children': [
                   {'title': 'Stage Name:', 'name': 'stage_name', 'type': 'str', 'value': '', 'readonly': True},
                   {'title': 'Stage Type:', 'name': 'stage_type', 'type': 'str', 'value': '', 'readonly': True},
+                  {'title': 'Units', 'name': 'units', 'type': 'list', 'limits': ['um', 'nm', 'mm', 'in', 'cm', 'rad', 'deg']  }
               ]}
               ] + comon_parameters_fun(is_multiaxes, axis_names = _axis_names, epsilon=_epsilon)
     logger.info(f"params: {params} loaded")
@@ -51,7 +52,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
     def ini_attributes(self):
 
         # super().__init__(parent, params_state)
-        self.controller = ZaberMultiple()
+        self.controller = None
         logger.info("Ini attributes loaded :)")
 
     def ini_stage(self, controller=None):
@@ -72,11 +73,43 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         try:
             self.ini_stage_init(slave_controller=controller)
             if self.is_master:
-                self.controller = self.controller.connect(self.settings.child('com_port').value())
+                self.controller = ZaberMultiple()
+                self.controller.connect(self.settings.child('com_port').value())
+                self.controller.set_units(self.settings.child('units').value(), self.axis_value)
+                self.controller.stage_name(self.axis_value)
+                # try:
+                #     device_list = Connection.open_serial_port(self.settings.child('com_port').value()).detect_devices()
+                # except ConnectionFailedException:
+                #     raise ConnectionError('Could not connect to Zaber controller on the specified serial port.')
 
-            info = "Zaber initialized"
-            initialized = True
-            return info, initialized
+                # self.controller = device_list[0]
+                # # self.axis_value, self.axis_name?
+                # logger.info(f"The device has been updated {self.controller}")
+
+
+            # check whether this stage is controlled by a multiaxe controller (to be defined for each plugin)
+            # if multiaxes then init the controller here if Master state otherwise use external controller
+            # elif self.settings.child('multiaxes', 'ismultiaxes').value() and self.settings.child('multiaxes',
+            #                        'multi_status').value() == "Slave":
+            #     if controller is None:
+            #         raise Exception('no controller has been defined externally while this axe is a slave one')
+            #     else:
+            #         self.controller = controller
+                    
+            #
+            # self.settings.child('controller_str').setValue(str(self.controller))
+            # user_axis =  self.settings.child('multiaxes', 'axis').value()
+            # if user_axis > self.controller.axis_count:
+            #     self.settings.child('multiaxes', 'axis').setValue(1)
+            #     self.emit_status(ThreadCommand('Update_Status', ['Zaber : You requested to use Axis number '+str(user_axis)+
+            #                                                      ' but only '+str(self.controller.axis_count)+
+            #                                                      ' are present. Defaulting to Axis number 1.', 'log']))
+            # self.settings.child('multiaxes', 'axis').setLimits([*range(1,1+self.controller.axis_count)]) # add limits to axes
+            # self.update_axis()
+
+            self.status.info = "Zaber initialized"
+            self.status.initialized = True
+            return self.status.info, self.status.initialized
 
         except Exception as e:
             self.emit_status(ThreadCommand('Update_Status',[getLineInfo()+ str(e),'log']))
@@ -129,13 +162,43 @@ class DAQ_Move_Zaber(DAQ_Move_base):
             | Called after a param_tree_changed signal from DAQ_Move_main.
         """
         if param.name() == 'axis':
-            self.update_axis()
-            self.check_position()
+            self.controller.set_units(self.settings.child('units').value(), self.settings.child('multiaxes', 'axis').value())
+            self.controller.stage_type(axis.axis_type.value)
+
         elif param.name() == 'units': 
             axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
             self.controller.set_units(self.settings.child('units').value(), self.settings.child('multiaxes', 'axis').value())
+            self.controller.stage_type(axis.axis_type.value)
             self.settings.child('epsilon').setValue(axis.settings.convert_from_native_units('pos', self.settings.child('epsilon').value(), self.unit))
-            self.check_position()
+
+        # # DK - I prefer to delete this because daq_move now has the unit feature
+        # elif param.name() == 'units':
+        #     axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
+
+        #     epsilon_native_units = axis.settings.convert_to_native_units(
+        #         'pos', self.settings.child('epsilon').value(), self.unit)
+
+        #     if param.value() == 'm':
+        #         self.unit = Units.LENGTH_METRES
+        #     elif param.value() == 'cm':
+        #         self.unit = Units.LENGTH_CENTIMETRES
+        #     elif param.value() == 'mm':
+        #         self.unit = Units.LENGTH_MILLIMETRES
+        #     elif param.value() == 'µm':
+        #         self.unit = Units.LENGTH_MICROMETRES
+        #     elif param.value() == 'nm':
+        #         self.unit = Units.LENGTH_NANOMETRES
+        #     elif param.value() == 'in':
+        #         self.unit = Units.LENGTH_INCHES
+        #     elif param.value() == 'deg':
+        #         self.unit = Units.ANGLE_DEGREES
+        #     elif param.value() == 'rad':
+        #         self.unit = Units.ANGLE_RADIANS
+
+        #     self.settings.child('epsilon').setValue(axis.settings.convert_from_native_units(
+        #         'pos', epsilon_native_units, self.unit))    # Convert epsilon to new units
+
+        #     self.check_position()
 
         else:
             pass
@@ -152,8 +215,13 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         position = self.set_position_with_scaling(position)  # apply scaling if the user specified one
         self.controller.move_abs(position, self.settings.child('multiaxes', 'axis').value())
 
-        self.poll_moving()  # start a loop to poll the current actuator value and compare it with target position
-        self.check_position()
+        # axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
+        # try:
+        #     axis.move_absolute(position, unit=self.unit)
+        # except Exception as e:
+        #     self.emit_status(ThreadCommand('Update_Status', [str(e)]))
+
+        # self.poll_moving()  # start a loop to poll the current actuator value and compare it with target position
 
     def move_rel(self, position): 
         """ Move the actuator to the relative target actuator value defined by position
@@ -170,9 +238,15 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         # has been activated by user
         position = self.set_position_with_scaling(position)
         self.controller.move_relative(position, self.settings.child('multiaxes', 'axis').value())
+        # axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
 
-        self.poll_moving()
-        self.check_position()
+        # try:
+        #     axis.move_relative(position, unit=self.unit)
+        # except Exception as e:
+        #     self.emit_status(ThreadCommand('Update_Status', [str(e)]))
+
+        # self.poll_moving()
+        # self.check_position()
 
     def move_home(self):
         """
