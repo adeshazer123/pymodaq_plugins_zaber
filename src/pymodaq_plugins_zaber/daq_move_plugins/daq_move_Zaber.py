@@ -49,20 +49,6 @@ class DAQ_Move_Zaber(DAQ_Move_base):
               ] + comon_parameters_fun(is_multiaxes, axis_names = _axis_names, epsilon=_epsilon)
     logger.info(f"params: {params} loaded")
 
-    # # Since we have no way of knowing how many axes are attached to the controller,
-    # # we modify axis to be an integer of any value instead of a list of strings.
-    # index = next(i for i, item in enumerate(params) if item["name"] == "multiaxes")
-    # index2 = next(i for i, item in enumerate(params[index]['children']) if item["name"] == "axis")
-    # params[index]['children'][index2]['type'] = 'int'   # override type
-    # params[index]['children'][index2]['value'] = 1
-    # params[index]['children'][index2]['default'] = 1
-    # del params[index]['children'][index2]['limits']     # need to remove limits to avoid bug
-    #
-    # # Override definition of units parameter to make it user-changeable
-    # index = next(i for i, item in enumerate(params) if item["name"] == "units")
-    # params[index]['readonly'] = False
-    # params[index]['type'] = 'list'
-
     def ini_attributes(self):
 
         # super().__init__(parent, params_state)
@@ -127,9 +113,9 @@ class DAQ_Move_Zaber(DAQ_Move_base):
 
         except Exception as e:
             self.emit_status(ThreadCommand('Update_Status',[getLineInfo()+ str(e),'log']))
-            self.status.info = getLineInfo()+ str(e)
-            self.status.initialized = False
-            return self.status
+            info = getLineInfo()+ str(e)
+            initialized = False
+            return info, initialized
 
     def update_axis(self):
         axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
@@ -160,12 +146,8 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         -------
         float: The position obtained after scaling conversion.
         """
-        axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
-        pos = axis.get_position(unit=self.unit)
-
+        pos = DataActuator(data=self.controller.get_position(self.settings.child('multiaxes', 'axis').value()))  # when writing your own plugin replace this line
         pos = self.get_position_with_scaling(pos)
-        self.current_position = pos
-        self.emit_status(ThreadCommand('check_position',[pos]))
         return pos
 
 
