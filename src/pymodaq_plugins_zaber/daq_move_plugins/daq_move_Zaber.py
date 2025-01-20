@@ -75,7 +75,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
             if self.is_master:
                 self.controller = ZaberMultiple()
                 self.controller.connect(self.settings.child('com_port').value())
-                self.update_axis(self.axis_value)
+                self.update_axis()
                 # self.controller.set_units(self.settings.child('units').value(), self.axis_value)
                 # self.controller.stage_name(self.axis_value)
                 # try:
@@ -120,14 +120,15 @@ class DAQ_Move_Zaber(DAQ_Move_base):
 
     def update_axis(self):
         stage_name = self.controller.stage_name(self.axis_value)
-        self.settings.child('stage_name').setValue(stage_name)
+        self.settings.child('stage_properties', 'stage_name').setValue(stage_name)
 
         if stage_name == 'Linear': 
-            self.settings.child('units').setLimits(['um', 'nm', 'mm', 'in', 'cm'])
-            self.settings.child('units').setValue('mm')
-        if stage_name == 'Rotary':
-            self.settings.child('units').setLimits(['rad', 'deg'])
-            self.settings.child('units').setValue('deg')
+            self.settings.child('stage_properties', 'units').setLimits(['um', 'nm', 'mm', 'in', 'cm'])
+            self.settings.child('stage_properties', 'units').setValue('mm')
+            
+        elif stage_name == 'OpticsRotary':
+            self.settings.child('stage_properties', 'units').setLimits(['rad', 'deg'])
+            self.settings.child('stage_properties','units').setValue('deg')
         
 
         # # Name and ID
@@ -150,13 +151,14 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         #     self.unit = Units.ANGLE_DEGREES
 
 
-    def get_actuator_value(self)
+    def get_actuator_value(self):
         """Get the current position from the hardware with scaling conversion.
         Returns
         -------
         float: The position obtained after scaling conversion.
         """
-        pos = DataActuator(self.controller.get_position(self.axis_value), self.settings.child('units').value())  # when writing your own plugin replace this line
+        pos = DataActuator(data=self.controller.get_position(self.axis_value), 
+                           units=self.settings.child('stage_properties', 'units').value())  # when writing your own plugin replace this line
         pos = self.get_position_with_scaling(pos)
         return pos
 
@@ -172,13 +174,15 @@ class DAQ_Move_Zaber(DAQ_Move_base):
             | Called after a param_tree_changed signal from DAQ_Move_main.
         """
         if param.name() == 'axis':
-            self.controller.set_units(self.settings.child('units').value(), self.axis_value)
-            self.controller.stage_type(axis.axis_type.value)
+            self.controller.set_units(self.settings.child('stage_properties', 'units').value(), self.axis_value)
+            stage_name = self.controller.stage_name(self.axis_value)
+            self.settings.child('stage_properties','stage_name').setValue(stage_name)
 
         elif param.name() == 'units': 
             axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
-            self.controller.set_units(self.settings.child('units').value(), self.settings.child('multiaxes', 'axis').value())
-            self.controller.stage_type(axis.axis_type.value)
+            self.controller.set_units(self.settings.child('stage_properties','units').value(), self.settings.child('multiaxes', 'axis').value())
+            # stage_name = self.controller.stage_name(self.axis_value)
+            # self.settings.child('stage_properties','stage_name').setValue(stage_name)
             self.settings.child('epsilon').setValue(axis.settings.convert_from_native_units('pos', self.settings.child('epsilon').value(), self.unit))
 
         # # DK - I prefer to delete this because daq_move now has the unit feature
@@ -213,7 +217,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         else:
             pass
 
-    def move_abs(self, position):
+    def move_abs(self, position: DataActuator):
         """ Move the actuator to the absolute target defined by position
         Parameters
         ----------
@@ -223,7 +227,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         self.target_position = position
 
         position = self.set_position_with_scaling(position)  # apply scaling if the user specified one
-        self.controller.move_abs(position, self.axis_value)
+        self.controller.move_abs(position.value(), self.axis_value)
 
         # axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
         # try:
@@ -233,7 +237,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
 
         # self.poll_moving()  # start a loop to poll the current actuator value and compare it with target position
 
-    def move_rel(self, position): 
+    def move_rel(self, position: DataActuator): 
         """ Move the actuator to the relative target actuator value defined by position
 
         Parameters
@@ -247,7 +251,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         # convert the user set position to the controller position if scaling
         # has been activated by user
         position = self.set_position_with_scaling(position)
-        self.controller.move_relative(position, self.axis_value)
+        self.controller.move_relative(position.value(), self.axis_value)
         # axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
 
         # try:
