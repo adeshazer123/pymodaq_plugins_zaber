@@ -75,8 +75,9 @@ class DAQ_Move_Zaber(DAQ_Move_base):
             if self.is_master:
                 self.controller = ZaberMultiple()
                 self.controller.connect(self.settings.child('com_port').value())
-                self.controller.set_units(self.settings.child('units').value(), self.axis_value)
-                self.controller.stage_name(self.axis_value)
+                self.update_axis(self.axis_value)
+                # self.controller.set_units(self.settings.child('units').value(), self.axis_value)
+                # self.controller.stage_name(self.axis_value)
                 # try:
                 #     device_list = Connection.open_serial_port(self.settings.child('com_port').value()).detect_devices()
                 # except ConnectionFailedException:
