@@ -125,8 +125,8 @@ class DAQ_Move_Zaber(DAQ_Move_base):
             self.settings.child('units').setValue('mm')
         if stage_name == 'Rotary':
             self.settings.child('units').setLimits(['rad', 'deg'])
-            self,settings.child('units').setValue('deg')
-        axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
+            self.settings.child('units').setValue('deg')
+        
 
         # # Name and ID
         # self.settings.child('stage_properties', 'stage_name').setValue(
