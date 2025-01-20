@@ -230,6 +230,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
 
         position = self.set_position_with_scaling(position)  # apply scaling if the user specified one
         self.controller.move_abs(position.value(), self.axis_value)
+        self.update_axis()
 
         # axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
         # try:
@@ -254,6 +255,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         # has been activated by user
         position = self.set_position_with_scaling(position)
         self.controller.move_relative(position.value(), self.axis_value)
+        self.update_axis()
         # axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
 
         # try:
@@ -288,6 +290,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         move_done
         """
         self.controller.stop(self.axis_value)
+        self.update_axis()
         #self.emit_status(ThreadCommand('Update_Status', ['Zaber Actuator '+ self.parent.title + ' (axis '+str(self.settings.child('multiaxes', 'axis').value())+') has been stopped']))
         # axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
         # axis.stop()
