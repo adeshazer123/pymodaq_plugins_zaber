@@ -179,11 +179,13 @@ class DAQ_Move_Zaber(DAQ_Move_base):
             self.settings.child('stage_properties','stage_name').setValue(stage_name)
 
         elif param.name() == 'units': 
-            axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
-            self.controller.set_units(self.settings.child('stage_properties','units').value(), self.settings.child('multiaxes', 'axis').value())
+            self.controller.set_units(self.settings.child('stage_properties', 'units').value(), self.axis_value)
+            self.settings.child('epsilon').setValue(self.controller.convert_from_native_units('pos', self.settings.child('epsilon').value(), self.unit))
+            # axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
+            # self.controller.set_units(self.settings.child('stage_properties','units').value(), self.settings.child('multiaxes', 'axis').value())
             # stage_name = self.controller.stage_name(self.axis_value)
             # self.settings.child('stage_properties','stage_name').setValue(stage_name)
-            self.settings.child('epsilon').setValue(axis.settings.convert_from_native_units('pos', self.settings.child('epsilon').value(), self.unit))
+            # self.settings.child('epsilon').setValue(axis.settings.convert_from_native_units('pos', self.settings.child('epsilon').value(), self.unit))
 
         # # DK - I prefer to delete this because daq_move now has the unit feature
         # elif param.name() == 'units':

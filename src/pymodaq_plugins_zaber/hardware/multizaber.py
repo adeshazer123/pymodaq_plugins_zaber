@@ -112,3 +112,7 @@ class ZaberMultiple:
             
     def stage_name(self,axis): 
        return self.stage_type[axis-1]
+    
+    def update_axis(self, axis): 
+        if self.stage_name == 'Linear':
+            self.co
