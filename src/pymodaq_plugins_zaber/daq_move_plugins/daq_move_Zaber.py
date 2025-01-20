@@ -118,29 +118,37 @@ class DAQ_Move_Zaber(DAQ_Move_base):
             return info, initialized
 
     def update_axis(self):
+        stage_name = self.controller.stage_name(self.axis_value)
+
+        if stage_name == 'Linear': 
+            self.settings.child('units').setLimits(['um', 'nm', 'mm', 'in', 'cm'])
+            self.settings.child('units').setValue('mm')
+        if stage_name == 'Rotary':
+            self.settings.child('units').setLimits(['rad', 'deg'])
+            self,settings.child('units').setValue('deg')
         axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
 
-        # Name and ID
-        self.settings.child('stage_properties', 'stage_name').setValue(
-            axis.peripheral_name + ' (ID:' + str(axis.peripheral_id) + ')'
-        )
-        # Type
-        self.settings.child('stage_properties', 'stage_type').setValue(
-            axis.axis_type.name
-        )
-        self.settings.child('units').setReadonly(False)
-        if axis.axis_type.value == 1:  # LINEAR
-            self.settings.child('units').setLimits(['m', 'cm', 'mm', 'µm', 'nm', 'in'])
-            self.settings.child('units').setValue('mm')
-            self.unit = Units.LENGTH_MILLIMETRES
+        # # Name and ID
+        # self.settings.child('stage_properties', 'stage_name').setValue(
+        #     axis.peripheral_name + ' (ID:' + str(axis.peripheral_id) + ')'
+        # )
+        # # Type
+        # self.settings.child('stage_properties', 'stage_type').setValue(
+        #     axis.axis_type.name
+        # )
+        # self.settings.child('units').setReadonly(False)
+        # if axis.axis_type.value == 1:  # LINEAR
+        #     self.settings.child('units').setLimits(['m', 'cm', 'mm', 'µm', 'nm', 'in'])
+        #     self.settings.child('units').setValue('mm')
+        #     self.unit = Units.LENGTH_MILLIMETRES
 
-        elif axis.axis_type.value == 2:  # ROTARY
-            self.settings.child('units').setLimits(['deg', 'rad'])
-            self.settings.child('units').setValue('deg')
-            self.unit = Units.ANGLE_DEGREES
+        # elif axis.axis_type.value == 2:  # ROTARY
+        #     self.settings.child('units').setLimits(['deg', 'rad'])
+        #     self.settings.child('units').setValue('deg')
+        #     self.unit = Units.ANGLE_DEGREES
 
 
-    def get_actuator_value(self):
+    def get_actuator_value(self)
         """Get the current position from the hardware with scaling conversion.
         Returns
         -------
