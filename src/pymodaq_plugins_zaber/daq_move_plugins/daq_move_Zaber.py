@@ -119,6 +119,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
 
     def update_axis(self):
         stage_name = self.controller.stage_name(self.axis_value)
+        self.settings.child('stage_name').setValue(stage_name)
 
         if stage_name == 'Linear': 
             self.settings.child('units').setLimits(['um', 'nm', 'mm', 'in', 'cm'])
