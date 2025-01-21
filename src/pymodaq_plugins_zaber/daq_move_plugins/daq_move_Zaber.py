@@ -75,7 +75,6 @@ class DAQ_Move_Zaber(DAQ_Move_base):
             if self.is_master:
                 self.controller = ZaberMultiple()
                 self.controller.connect(self.settings.child('com_port').value())
-                self.update_axis()
                 # self.controller.set_units(self.settings.child('units').value(), self.axis_value)
                 # self.controller.stage_name(self.axis_value)
                 # try:
@@ -158,7 +157,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         float: The position obtained after scaling conversion.
         """
         pos = DataActuator(data=self.controller.get_position(self.axis_value), 
-                           units=self.settings.child('stage_properties', 'units').value())  # when writing your own plugin replace this line
+                           units=self.controller.get_units(self.axis_value))  # when writing your own plugin replace this line
         pos = self.get_position_with_scaling(pos)
         return pos
 
@@ -179,8 +178,10 @@ class DAQ_Move_Zaber(DAQ_Move_base):
             self.settings.child('stage_properties','stage_name').setValue(stage_name)
 
         elif param.name() == 'units': 
-            self.controller.set_units(self.settings.child('stage_properties', 'units').value(), self.axis_value)
-            self.settings.child('epsilon').setValue(self.controller.convert_from_native_units('pos', self.settings.child('epsilon').value(), self.unit))
+            axis = self.controller.get_axis(self.axis_value)
+            self.controller.set_units(self.settings.child('stage_properties', 'units'), self.axis_value)
+            self.settings.child('epsilon').setValue(axis.settings.convert_from_native_units('pos', self.settings.child('epsilon').value(), self.unit))
+                                           
             # axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
             # self.controller.set_units(self.settings.child('stage_properties','units').value(), self.settings.child('multiaxes', 'axis').value())
             # stage_name = self.controller.stage_name(self.axis_value)

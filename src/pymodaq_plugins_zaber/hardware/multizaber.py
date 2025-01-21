@@ -53,19 +53,19 @@ class ZaberMultiple:
             """
         if units in ['um', 'nm', 'mm', 'in', 'cm', 'rad', 'deg']:
             if units == 'um':
-                units = Units.LENGTH_MICROMETRES
+                Units.LENGTH_MICROMETRES
             if units == 'nm':
-                units = Units.LENGTH_NANOMETRES
+                Units.LENGTH_NANOMETRES
             if units == 'mm':
-                units = Units.LENGTH_MILLIMETRES
+                Units.LENGTH_MILLIMETRES
             if units == 'in':
-                units = Units.LENGTH_INCHES
+                Units.LENGTH_INCHES
             if units == 'cm':
-                units = Units.LENGTH_CENTIMETRES
+                Units.LENGTH_CENTIMETRES
             if units == 'rad':
-                units = Units.ANGLE_RADIANS
+                Units.ANGLE_RADIANS
             if units == 'deg':
-                units = Units.ANGLE_DEGREES
+                Units.ANGLE_DEGREES
         else:
             logger.error("Units not recognized")
 
