@@ -122,11 +122,11 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         stage_name = self.controller.stage_name(self.axis_value)
         self.settings.child('stage_properties', 'stage_name').setValue(stage_name)
 
-        if stage_name == 'Linear': 
+        if stage_name == 'LINEAR': 
             self.settings.child('stage_properties', 'units').setLimits(['um', 'nm', 'mm', 'in', 'cm'])
             self.settings.child('stage_properties', 'units').setValue('mm')
             
-        elif stage_name == 'OpticsRotary':
+        elif stage_name == 'ROTARY':
             self.settings.child('stage_properties', 'units').setLimits(['rad', 'deg'])
             self.settings.child('stage_properties','units').setValue('deg')
         
