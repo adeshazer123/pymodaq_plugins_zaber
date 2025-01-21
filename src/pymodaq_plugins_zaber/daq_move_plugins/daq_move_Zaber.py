@@ -75,6 +75,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
             if self.is_master:
                 self.controller = ZaberMultiple()
                 self.controller.connect(self.settings.child('com_port').value())
+                self.update_axis()
                 # self.controller.set_units(self.settings.child('units').value(), self.axis_value)
                 # self.controller.stage_name(self.axis_value)
                 # try:
@@ -124,10 +125,16 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         if stage_name == 'LINEAR': 
             self.settings.child('stage_properties', 'units').setLimits(['um', 'nm', 'mm', 'in', 'cm'])
             self.settings.child('stage_properties', 'units').setValue('mm')
+            self.controller.set_units(self.settings.child('stage_properties','units').value(), self.axis_value)
+            self.axis_unit = self.controller.get_units(self.axis_value)
+            
             
         elif stage_name == 'ROTARY':
             self.settings.child('stage_properties', 'units').setLimits(['rad', 'deg'])
             self.settings.child('stage_properties','units').setValue('deg')
+            self.controller.set_units(self.settings.child('stage_properties','units').value(), self.axis_value)
+            self.axis_unit = self.controller.get_units(self.axis_value)
+            
         
 
         # # Name and ID
@@ -173,15 +180,16 @@ class DAQ_Move_Zaber(DAQ_Move_base):
             | Called after a param_tree_changed signal from DAQ_Move_main.
         """
         if param.name() == 'axis':
-            self.controller.set_units(self.settings.child('stage_properties', 'units').value(), self.axis_value)
+            #self.controller.set_units(self.settings.child('stage_properties', 'units').value(), self.axis_value)
             stage_name = self.controller.stage_name(self.axis_value)
             self.settings.child('stage_properties','stage_name').setValue(stage_name)
+            self.update_axis()
 
         elif param.name() == 'units': 
-            axis = self.controller.get_axis(self.axis_value)
+            axis = self.controller.get_axis_object(self.axis_value)
             self.controller.set_units(self.settings.child('stage_properties', 'units'), self.axis_value)
-            self.settings.child('epsilon').setValue(axis.settings.convert_from_native_units('pos', self.settings.child('epsilon').value(), self.unit))
-                                           
+            self.settings.child('epsilon').setValue(axis.axis_settings.convert_from_native_units('pos', self.settings.child('epsilon').value(), self.unit))
+            #                                            
             # axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
             # self.controller.set_units(self.settings.child('stage_properties','units').value(), self.settings.child('multiaxes', 'axis').value())
             # stage_name = self.controller.stage_name(self.axis_value)
