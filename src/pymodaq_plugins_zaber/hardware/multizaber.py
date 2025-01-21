@@ -13,6 +13,7 @@ class ZaberMultiple:
         self.controller = []
         self.controller_axis = []
         self.unit = []
+        self.unit_object = None
         self.stage_type = []
 
     def get_axis(self, axis):  # The same names of axis (= self.axis_value) and self.axis may be confusing. I would like to rename the attribute or the object name.
@@ -116,3 +117,22 @@ class ZaberMultiple:
     def get_axis_object(self, axis): 
         axis = axis - 1
         return self.controller_axis[axis]
+    def get_unit_object(self, unit): 
+            if unit == 'm':
+                self.unit_object = Units.LENGTH_METRES
+            elif unit == 'cm':
+                self.unit_object = Units.LENGTH_CENTIMETRES
+            elif unit == 'mm':
+                self.unit_object= Units.LENGTH_MILLIMETRES
+            elif unit == 'um':
+                self.unit_object = Units.LENGTH_MICROMETRES
+            elif unit == 'nm':
+                self.unit_object = Units.LENGTH_NANOMETRES
+            elif unit == 'in':
+                self.unit_object = Units.LENGTH_INCHES
+            elif unit == 'deg':
+                self.unit_object = Units.ANGLE_DEGREES
+            elif unit == 'rad':
+                self.unit_object = Units.ANGLE_RADIANS
+
+            return self.unit_object

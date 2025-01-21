@@ -53,6 +53,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
 
         # super().__init__(parent, params_state)
         self.controller = None
+        self.unit = None
         logger.info("Ini attributes loaded :)")
 
     def ini_stage(self, controller=None):
@@ -188,7 +189,9 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         elif param.name() == 'units': 
             axis = self.controller.get_axis_object(self.axis_value)
             self.controller.set_units(self.settings.child('stage_properties', 'units'), self.axis_value)
-            self.settings.child('epsilon').setValue(axis.axis_settings.convert_from_native_units('pos', self.settings.child('epsilon').value(), self.unit))
+            self.unit = self.controller.get_unit_object(self.settings.child('stage_properties', 'units').value())
+            # axis_settings.convert_to_native_units(setting, value, unit)
+            self.settings.child('epsilon').setValue(axis._settings.convert_from_native_units('pos', self.settings.child('epsilon').value(), self.unit))
             #                                            
             # axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
             # self.controller.set_units(self.settings.child('stage_properties','units').value(), self.settings.child('multiaxes', 'axis').value())
@@ -203,22 +206,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         #     epsilon_native_units = axis.settings.convert_to_native_units(
         #         'pos', self.settings.child('epsilon').value(), self.unit)
 
-        #     if param.value() == 'm':
-        #         self.unit = Units.LENGTH_METRES
-        #     elif param.value() == 'cm':
-        #         self.unit = Units.LENGTH_CENTIMETRES
-        #     elif param.value() == 'mm':
-        #         self.unit = Units.LENGTH_MILLIMETRES
-        #     elif param.value() == 'µm':
-        #         self.unit = Units.LENGTH_MICROMETRES
-        #     elif param.value() == 'nm':
-        #         self.unit = Units.LENGTH_NANOMETRES
-        #     elif param.value() == 'in':
-        #         self.unit = Units.LENGTH_INCHES
-        #     elif param.value() == 'deg':
-        #         self.unit = Units.ANGLE_DEGREES
-        #     elif param.value() == 'rad':
-        #         self.unit = Units.ANGLE_RADIANS
+
 
         #     self.settings.child('epsilon').setValue(axis.settings.convert_from_native_units(
         #         'pos', epsilon_native_units, self.unit))    # Convert epsilon to new units
