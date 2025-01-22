@@ -44,7 +44,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
               {'title': 'Stage Properties:', 'name': 'stage_properties', 'type': 'group', 'children': [
                   {'title': 'Stage Name:', 'name': 'stage_name', 'type': 'str', 'value': '', 'readonly': True},
                   {'title': 'Stage Type:', 'name': 'stage_type', 'type': 'str', 'value': '', 'readonly': True},
-                  {'title': 'Units', 'name': 'units', 'type': 'list', 'limits': ['um', 'nm', 'mm', 'in', 'cm', 'rad', 'deg']  }
+                  {'title': 'Units', 'name': 'units', 'type': 'list', 'limits': ['mm','rad', 'deg']  }
               ]}
               ] + comon_parameters_fun(is_multiaxes, axis_names = _axis_names, epsilon=_epsilon)
     logger.info(f"params: {params} loaded")
@@ -54,6 +54,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         # super().__init__(parent, params_state)
         self.controller = None
         self.unit = None
+        self.epsilon_native_units = None
         logger.info("Ini attributes loaded :)")
 
     def ini_stage(self, controller=None):
@@ -122,19 +123,25 @@ class DAQ_Move_Zaber(DAQ_Move_base):
     def update_axis(self):
         stage_name = self.controller.stage_name(self.axis_value)
         self.settings.child('stage_properties', 'stage_name').setValue(stage_name)
+        
 
         if stage_name == 'LINEAR': 
-            self.settings.child('stage_properties', 'units').setLimits(['um', 'nm', 'mm', 'in', 'cm'])
+            self.settings.child('stage_properties', 'units').setLimits(['mm'])
             self.settings.child('stage_properties', 'units').setValue('mm')
-            self.controller.set_units(self.settings.child('stage_properties','units').value(), self.axis_value)
+            self.unit = self.controller.units_update(self.settings.child('stage_properties','units').value(), self.axis_value)
             self.axis_unit = self.controller.get_units(self.axis_value)
+            self.emit_status(ThreadCommand('Update_Status', ['update_axis - Linear stage' + f"{self.axis_unit}"]))
             
             
         elif stage_name == 'ROTARY':
             self.settings.child('stage_properties', 'units').setLimits(['rad', 'deg'])
             self.settings.child('stage_properties','units').setValue('deg')
-            self.controller.set_units(self.settings.child('stage_properties','units').value(), self.axis_value)
+            self.unit = self.controller.units_update(self.settings.child('stage_properties','units').value(), self.axis_value)
             self.axis_unit = self.controller.get_units(self.axis_value)
+            axis = self.controller.get_axis_object(self.axis_value)
+            self.epsilon_native_units = axis.settings.convert_to_native_units('pos', self.settings.child('epsilon').value(), self.unit)
+            self.emit_status(ThreadCommand('Update_Status', ['update_axis - Rotary stage' + " " + f"{self.axis_unit}"]))
+            
             
         
 
@@ -165,8 +172,10 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         float: The position obtained after scaling conversion.
         """
         pos = DataActuator(data=self.controller.get_position(self.axis_value), 
-                           units=self.controller.get_units(self.axis_value))  # when writing your own plugin replace this line
+                        #    units=self.controller.get_units(self.axis_value)
+                           )  # when writing your own plugin replace this line
         pos = self.get_position_with_scaling(pos)
+        self.emit_status(ThreadCommand('Update_Status', ['get_actuator_value - Linear stage' + " " + f"{pos}"]))
         return pos
 
 
@@ -185,13 +194,19 @@ class DAQ_Move_Zaber(DAQ_Move_base):
             stage_name = self.controller.stage_name(self.axis_value)
             self.settings.child('stage_properties','stage_name').setValue(stage_name)
             self.update_axis()
+            self.get_actuator_value()
+            # self.emit_status(ThreadCommand('Update_Status', ['Linear stage' + " " + f"{}"]))
+            # Write emit status write emit status write emit status write e
 
         elif param.name() == 'units': 
             axis = self.controller.get_axis_object(self.axis_value)
-            self.controller.set_units(self.settings.child('stage_properties', 'units'), self.axis_value)
-            self.unit = self.controller.get_unit_object(self.settings.child('stage_properties', 'units').value())
+            # self.controller.units_update(self.settings.child('stage_properties', 'units'), self.axis_value)
+            self.unit = self.controller.units_update(self.settings.child('stage_properties', 'units').value(), self.axis_value)
             # axis_settings.convert_to_native_units(setting, value, unit)
-            self.settings.child('epsilon').setValue(axis._settings.convert_from_native_units('pos', self.settings.child('epsilon').value(), self.unit))
+            self.settings.child('epsilon').setValue(axis.settings.convert_from_native_units('pos', self.epsilon_native_units, self.unit))
+           
+            self.axis_unit = self.controller.get_units(self.axis_value)
+            self.get_actuator_value()
             #                                            
             # axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
             # self.controller.set_units(self.settings.child('stage_properties','units').value(), self.settings.child('multiaxes', 'axis').value())
@@ -287,7 +302,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         move_done
         """
         self.controller.stop(self.axis_value)
-        self.update_axis()
+        # self.update_axis()
         #self.emit_status(ThreadCommand('Update_Status', ['Zaber Actuator '+ self.parent.title + ' (axis '+str(self.settings.child('multiaxes', 'axis').value())+') has been stopped']))
         # axis = self.controller.get_axis(self.settings.child('multiaxes', 'axis').value())
         # axis.stop()

@@ -40,7 +40,7 @@ class ZaberMultiple:
             self.stage_type.append(axis_type)
             self.unit.append('')
             if axis_control.axis_type.value == 1:
-                self.set_units('um', i)
+                self.set_units('mm', i)
             elif axis_control.axis_type.value == 2: 
                 self.set_units('deg', i)
 
@@ -117,22 +117,17 @@ class ZaberMultiple:
     def get_axis_object(self, axis): 
         axis = axis - 1
         return self.controller_axis[axis]
-    def get_unit_object(self, unit): 
-            if unit == 'm':
-                self.unit_object = Units.LENGTH_METRES
-            elif unit == 'cm':
-                self.unit_object = Units.LENGTH_CENTIMETRES
-            elif unit == 'mm':
+    def units_update(self, unit, axis): 
+
+            if unit == 'mm':
                 self.unit_object= Units.LENGTH_MILLIMETRES
-            elif unit == 'um':
-                self.unit_object = Units.LENGTH_MICROMETRES
-            elif unit == 'nm':
-                self.unit_object = Units.LENGTH_NANOMETRES
-            elif unit == 'in':
-                self.unit_object = Units.LENGTH_INCHES
+                Units.LENGTH_MILLIMETRES
             elif unit == 'deg':
                 self.unit_object = Units.ANGLE_DEGREES
+                Units.ANGLE_DEGREES
             elif unit == 'rad':
                 self.unit_object = Units.ANGLE_RADIANS
+                Units.ANGLE_RADIANS
 
+            self.unit[axis-1] = unit
             return self.unit_object
