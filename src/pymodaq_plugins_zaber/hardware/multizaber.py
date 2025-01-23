@@ -22,7 +22,7 @@ class ZaberMultiple:
 
     def get_units(self, axis):
         """Return Zaber Actuator Units"""
-        # DK - should we use a zaber_motion method to get the unit which may be more reliable?
+        # DK - should we use a zaber_motion method to get the unit which may be more reliable?'
         return self.unit[axis - 1]
 
     def connect(self, port):
@@ -40,37 +40,10 @@ class ZaberMultiple:
             self.stage_type.append(axis_type)
             self.unit.append('')
             if axis_control.axis_type.value == 1:
-                self.set_units('mm', i)
+                self.units_update('mm', i)
             elif axis_control.axis_type.value == 2: 
-                self.set_units('deg', i)
+                self.units_update('degree', i)
 
-    def set_units(self, units, axis):
-        """Sets the units of the Zaber actuators
-            um: micrometer
-            nm: nanometer
-            mm: milometer
-            inch: inches
-            ang: angle
-            """
-        if units in ['um', 'nm', 'mm', 'in', 'cm', 'rad', 'deg']:
-            if units == 'um':
-                Units.LENGTH_MICROMETRES
-            if units == 'nm':
-                Units.LENGTH_NANOMETRES
-            if units == 'mm':
-                Units.LENGTH_MILLIMETRES
-            if units == 'in':
-                Units.LENGTH_INCHES
-            if units == 'cm':
-                Units.LENGTH_CENTIMETRES
-            if units == 'rad':
-                Units.ANGLE_RADIANS
-            if units == 'deg':
-                Units.ANGLE_DEGREES
-        else:
-            logger.error("Units not recognized")
-
-        self.unit[axis-1] = units
 
     def move_abs(self, position, axis):
 
@@ -92,6 +65,10 @@ class ZaberMultiple:
     def get_position(self, axis):
         if (axis > 0): 
             axes = self.controller_axis[axis-1]
+            if self.unit[axis-1] == 'degree': 
+                unit = 'deg'
+                return axes.get_position(unit)
+            
             return axes.get_position(self.unit[axis-1])
         
         else:
@@ -122,7 +99,7 @@ class ZaberMultiple:
             if unit == 'mm':
                 self.unit_object= Units.LENGTH_MILLIMETRES
                 Units.LENGTH_MILLIMETRES
-            elif unit == 'deg':
+            elif unit == 'degree': # DK- deg -> what about daq_move?
                 self.unit_object = Units.ANGLE_DEGREES
                 Units.ANGLE_DEGREES
             elif unit == 'rad':

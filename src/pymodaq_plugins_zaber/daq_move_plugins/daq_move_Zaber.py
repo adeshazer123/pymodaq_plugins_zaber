@@ -35,7 +35,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
 
     is_multiaxes = True 
     _axis_names: Union[List[str], Dict[str, int]] = {"1":1, "2":2} # DK - use device_list to populate.
-    _controller_units: Union[str, List[str]] = ' ' 
+    _controller_units: Union[str, List[str]] = 'degree' 
     _epsilon: Union[float, List[float]] = 0.01 
     data_actuator_type = DataActuatorType.DataActuator 
 
@@ -44,7 +44,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
               {'title': 'Stage Properties:', 'name': 'stage_properties', 'type': 'group', 'children': [
                   {'title': 'Stage Name:', 'name': 'stage_name', 'type': 'str', 'value': '', 'readonly': True},
                   {'title': 'Stage Type:', 'name': 'stage_type', 'type': 'str', 'value': '', 'readonly': True},
-                  {'title': 'Units', 'name': 'units', 'type': 'list', 'limits': ['mm','rad', 'deg']  }
+                  {'title': 'Units', 'name': 'units', 'type': 'list', 'limits': ['mm','rad', 'degree']  }
               ]}
               ] + comon_parameters_fun(is_multiaxes, axis_names = _axis_names, epsilon=_epsilon)
     logger.info(f"params: {params} loaded")
@@ -134,8 +134,8 @@ class DAQ_Move_Zaber(DAQ_Move_base):
             
             
         elif stage_name == 'ROTARY':
-            self.settings.child('stage_properties', 'units').setLimits(['rad', 'deg'])
-            self.settings.child('stage_properties','units').setValue('deg')
+            self.settings.child('stage_properties', 'units').setLimits(['rad', 'degree'])
+            self.settings.child('stage_properties','units').setValue('degree')
             self.unit = self.controller.units_update(self.settings.child('stage_properties','units').value(), self.axis_value)
             self.axis_unit = self.controller.get_units(self.axis_value)
             axis = self.controller.get_axis_object(self.axis_value)
@@ -172,7 +172,7 @@ class DAQ_Move_Zaber(DAQ_Move_base):
         float: The position obtained after scaling conversion.
         """
         pos = DataActuator(data=self.controller.get_position(self.axis_value), 
-                        #    units=self.controller.get_units(self.axis_value)
+                           units=self.controller.get_units(self.axis_value)
                            )  # when writing your own plugin replace this line
         pos = self.get_position_with_scaling(pos)
         self.emit_status(ThreadCommand('Update_Status', ['get_actuator_value - Linear stage' + " " + f"{pos}"]))
